@@ -1,0 +1,159 @@
+'use client'
+
+import { useState } from 'react'
+
+// Force dynamic rendering to avoid build-time Supabase initialization
+export const dynamic = 'force-dynamic'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
+
+export default function SignUpPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      // Sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          }
+        }
+      })
+
+      if (authError) throw authError
+
+      if (authData.user) {
+        // Create profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: authData.user.id,
+            full_name: fullName,
+            username: email.split('@')[0], // Default username
+          })
+
+        if (profileError) throw profileError
+
+        toast.success('Account created! Please check your email to verify your account.')
+        router.push('/dashboard')
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Something went wrong. Please try again.'
+      toast.error(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
+      <Card className="w-full max-w-md bg-white border-neutral-200">
+        <CardHeader className="space-y-1">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-accent-green rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-2xl">JC</span>
+            </div>
+          </div>
+          <CardTitle className="text-2xl text-center text-text-primary">Karibu! Join Jamii Connect</CardTitle>
+          <CardDescription className="text-center text-text-secondary">
+            Connect with the Kenyan community in the UK
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSignUp} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName" className="text-text-primary">Full Name</Label>
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="John Kamau"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                className="border-neutral-300 focus:border-accent-green"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-text-primary">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="john@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="border-neutral-300 focus:border-accent-green"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-text-primary">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="border-neutral-300 focus:border-accent-green"
+              />
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full bg-accent-green hover:bg-green-700 text-white"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                'Create Account'
+              )}
+            </Button>
+          </form>
+          
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-neutral-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-text-muted">Or continue with</span>
+            </div>
+          </div>
+          
+          <Button variant="outline" className="w-full border-neutral-300 text-text-primary hover:bg-neutral-100" disabled>
+            Continue with Google (Coming Soon)
+          </Button>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-text-secondary">
+            Already have an account?{' '}
+            <Link href="/login" className="text-accent-green hover:underline">
+              Log in
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
+    </div>
+  )
+}
