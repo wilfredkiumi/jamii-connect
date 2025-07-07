@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 
-// Force dynamic rendering to avoid build-time Supabase initialization
-export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { signUpUser } from '@/lib/amplify/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,43 +15,26 @@ import { Loader2 } from 'lucide-react'
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      // Sign up the user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          }
-        }
-      })
+      const { userId, isSignUpComplete, nextStep } = await signUpUser(email, password, firstName, lastName)
 
-      if (authError) throw authError
-
-      if (authData.user) {
-        // Create profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            full_name: fullName,
-            username: email.split('@')[0], // Default username
-          })
-
-        if (profileError) throw profileError
-
-        toast.success('Account created! Please check your email to verify your account.')
+      if (isSignUpComplete) {
+        toast.success('Account created successfully! Welcome to Jamii Connect.')
         router.push('/dashboard')
+      } else if (nextStep?.signUpStep === 'CONFIRM_SIGN_UP') {
+        toast.success('Account created! Please check your email to verify your account.')
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`)
+      } else {
+        toast.error('Account creation requires additional steps')
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Something went wrong. Please try again.'
@@ -80,13 +61,25 @@ export default function SignUpPage() {
         <CardContent>
           <form onSubmit={handleSignUp} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-text-primary">Full Name</Label>
+              <Label htmlFor="firstName" className="text-text-primary">First Name</Label>
               <Input
-                id="fullName"
+                id="firstName"
                 type="text"
-                placeholder="John Kamau"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                placeholder="John"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                className="border-neutral-300 focus:border-accent-green"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName" className="text-text-primary">Last Name</Label>
+              <Input
+                id="lastName"
+                type="text"
+                placeholder="Kamau"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
                 required
                 className="border-neutral-300 focus:border-accent-green"
               />

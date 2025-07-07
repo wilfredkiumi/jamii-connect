@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { AmplifyProvider } from "@/components/providers/amplify-provider";
+import { Header } from "@/components/layout/Header";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -9,8 +11,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Jamii Connect - Kenyan Community in the UK",
-  description: "Connect with fellow Kenyans, find opportunities, and build your life in the UK with the support of your community.",
+  title: "Jamii Connect - Pan-African Diaspora Community",
+  description: "Connect with fellow Africans worldwide, find opportunities, and build your life abroad with the support of your continental community.",
+  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({
@@ -20,8 +23,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} antialiased`}>
-        {children}
+      <body className={`${inter.variable} antialiased min-h-screen bg-background`}>
+        <AmplifyProvider>
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+        </AmplifyProvider>
         <Toaster />
       </body>
     </html>
