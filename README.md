@@ -11,10 +11,15 @@ This design follows the professional 60/30/10 color distribution rule:
 
 ## 🚀 Tech Stack
 
-- **Framework**: Next.js 14 (App Router) + TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui components
-- **Database**: Supabase (PostgreSQL + Auth + Realtime)
-- **Deployment**: Vercel (seamless Next.js integration)
+- **Framework**: Next.js 15 (App Router) + TypeScript + React 19
+- **Styling**: Tailwind CSS 4 + shadcn/ui components
+- **Backend**: AWS Amplify + Serverless Architecture
+- **Database**: AWS DynamoDB (NoSQL with GSIs)
+- **Authentication**: AWS Cognito (User Pools + Identity Pools)
+- **API**: AWS Lambda + API Gateway (REST API)
+- **Storage**: AWS S3 + CloudFront (CDN)
+- **Infrastructure**: AWS CDK (Infrastructure as Code)
+- **Deployment**: AWS Amplify / Vercel
 
 ## 📋 Prerequisites
 
@@ -49,21 +54,53 @@ pnpm install
 cp .env.example .env.local
 ```
 
-2. Update `.env.local` with your Supabase credentials:
+2. Update `.env.local` with your AWS credentials:
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_KEY=your_supabase_service_key
+# AWS Cognito Configuration
+NEXT_PUBLIC_USER_POOL_ID=us-east-1_xxxxx
+NEXT_PUBLIC_USER_POOL_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_IDENTITY_POOL_ID=us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+NEXT_PUBLIC_AWS_REGION=us-east-1
+
+# AWS API Gateway
+NEXT_PUBLIC_API_ENDPOINT=https://xxxxx.execute-api.us-east-1.amazonaws.com/prod
+
+# App Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Optional: For local development with AWS SDK
+AWS_ACCESS_KEY_ID=xxxxxxxxxxxxxxxxxxxxx
+AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-### 4. Database Setup
+### 4. AWS Infrastructure Setup
 
-1. Create a new Supabase project at [supabase.com](https://supabase.com)
-2. Run the database schema in your Supabase SQL editor:
+1. Install AWS CDK CLI:
 ```bash
-# Copy the contents of supabase/schema.sql and run it in Supabase SQL editor
+npm install -g aws-cdk
 ```
+
+2. Configure AWS credentials:
+```bash
+aws configure
+# Enter your AWS Access Key ID, Secret Access Key, and preferred region
+```
+
+3. Deploy the infrastructure:
+```bash
+cd infrastructure
+npm install
+cdk bootstrap  # One-time setup for your AWS account
+cdk deploy     # Deploy all resources (DynamoDB, Lambda, API Gateway, Cognito, S3)
+```
+
+4. After deployment, copy the output values to your `.env.local`:
+   - UserPoolId
+   - UserPoolClientId
+   - IdentityPoolId
+   - ApiEndpoint
+
+See `infrastructure/README.md` for detailed deployment instructions.
 
 ### 5. Run the Development Server
 
@@ -89,32 +126,45 @@ jamii-connect/
 │   │   ├── (main)/
 │   │   │   ├── dashboard/page.tsx
 │   │   │   ├── jobs/page.tsx
-│   │   │   └── profile/page.tsx
+│   │   │   ├── events/page.tsx
+│   │   │   ├── profile/page.tsx
+│   │   │   └── services/page.tsx
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
 │   │   └── globals.css
 │   ├── components/
 │   │   ├── ui/           # shadcn/ui components
-│   │   ├── layout/
-│   │   └── features/
+│   │   ├── layout/       # Header, Footer, MobileNav
+│   │   └── features/     # PostCard, JobCard, EventCard
 │   └── lib/
-│       └── supabase/
-├── types/
-│   └── database.ts
-├── supabase/
-│   └── schema.sql
+│       ├── amplify/      # AWS Amplify config & data access
+│       ├── utils.ts
+│       └── *-data.ts     # Static data files
+├── infrastructure/
+│   ├── lib/
+│   │   └── jamii-connect-stack.ts  # AWS CDK stack
+│   └── lambda/           # Lambda function handlers
+│       ├── jobs/
+│       ├── events/
+│       ├── posts/
+│       └── file-upload/
+├── database/
+│   └── dynamodb-tables.yaml  # DynamoDB schema
 └── public/
 ```
 
 ## 🎯 Features Implemented
 
 ### ✅ Core Infrastructure
-- [x] Next.js 14 with App Router
+- [x] Next.js 15 with App Router + React 19
 - [x] TypeScript configuration
-- [x] Tailwind CSS with custom Kenyan theme
+- [x] Tailwind CSS 4 with custom Kenyan theme
 - [x] shadcn/ui component library
-- [x] Supabase integration with SSR
+- [x] AWS Amplify integration with SSR
+- [x] AWS Cognito authentication
 - [x] Authentication middleware
+- [x] AWS CDK infrastructure (fully defined)
+- [x] DynamoDB data access layer (complete)
 
 ### ✅ Authentication System
 - [x] Login page with email/password
@@ -129,13 +179,14 @@ jamii-connect/
 - [x] Call-to-action sections
 - [x] Responsive design
 
-### ✅ Database Schema
-- [x] User profiles table
-- [x] Posts/discussions table
-- [x] Jobs board table
-- [x] Events table
-- [x] Services directory table
-- [x] Row Level Security (RLS) policies
+### ✅ Database Schema (DynamoDB)
+- [x] Users table with profile data
+- [x] Posts table with GSI for category queries
+- [x] Jobs table with GSI for location/type queries
+- [x] Events table with date-based GSI
+- [x] Services table with category GSI
+- [x] Connections table for user relationships
+- [x] Lambda functions for all CRUD operations
 
 ## 🔄 Next Steps for Remote Agents
 
@@ -212,8 +263,10 @@ npm run start
 - Implement responsive design for all components
 
 ### Database Operations
-- Always use Row Level Security (RLS)
-- Use the typed database client from `@/lib/supabase/client`
+- Use data access functions from `@/lib/amplify/data-access.ts`
+- All DynamoDB operations include proper error handling
+- Leverage GSIs for efficient queries
+- Use pagination for large result sets
 - Handle errors gracefully with user-friendly messages
 
 ### UI/UX Guidelines
@@ -224,27 +277,48 @@ npm run start
 
 ## 📚 API Documentation
 
-### Supabase Tables
+### DynamoDB Tables
 
-#### profiles
-- User profile information extending Supabase auth
-- Fields: username, full_name, bio, location, skills, etc.
+#### Users
+- User profile information linked to Cognito auth
+- PK: `userId`, GSI: `email`
+- Fields: username, full_name, bio, location, skills, looking_for, avatar_url
 
-#### posts
+#### Posts
 - Community discussions and posts
-- Fields: title, content, category, tags, likes_count
+- PK: `postId`, SK: `userId`, GSI: `category`
+- Fields: title, content, category, tags, likes_count, comments_count
 
-#### jobs
+#### Jobs
 - Job board listings
-- Fields: job_title, company_name, location, salary_range, requirements
+- PK: `jobId`, SK: `postedBy`, GSI: `location`, GSI: `job_type`
+- Fields: job_title, company_name, location, salary_range, requirements, diaspora_friendly
 
-#### events
+#### Events
 - Community events
-- Fields: title, description, event_date, location_name, max_attendees
+- PK: `eventId`, SK: `organizer_id`, GSI: `event_date`
+- Fields: title, description, event_date, location_name, max_attendees, attendees_count
 
-#### services
+#### Services
 - Service provider directory
-- Fields: service_name, category, description, contact_info
+- PK: `serviceId`, SK: `providerId`, GSI: `category`
+- Fields: service_name, category, description, contact_info, verified
+
+#### Connections
+- User relationships and networking
+- PK: `userId`, SK: `connectedUserId`
+- Fields: status, created_at
+
+### Lambda Functions
+
+All CRUD operations are handled by Lambda functions at:
+- `/infrastructure/lambda/jobs/` - Job board operations
+- `/infrastructure/lambda/events/` - Event management
+- `/infrastructure/lambda/posts/` - Post creation and retrieval
+- `/infrastructure/lambda/services/` - Service directory
+- `/infrastructure/lambda/users/` - User profile management
+- `/infrastructure/lambda/connections/` - User connections
+- `/infrastructure/lambda/file-upload/` - S3 file uploads
 
 ## 🤝 Contributing
 
@@ -257,9 +331,10 @@ npm run start
 
 For questions or issues:
 - Check the existing documentation
-- Review the Supabase schema
-- Test authentication flows
-- Verify environment variables
+- Review the DynamoDB schema in `database/dynamodb-tables.yaml`
+- Review Lambda functions in `infrastructure/lambda/`
+- Test authentication flows with AWS Cognito
+- Verify environment variables in `.env.local`
 
 ## 📄 License
 

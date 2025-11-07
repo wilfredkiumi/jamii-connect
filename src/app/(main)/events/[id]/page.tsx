@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format, formatDistanceToNow, isAfter, isBefore } from 'date-fns'
-// import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -58,8 +57,6 @@ export default function EventDetailPage() {
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [isAttending, setIsAttending] = useState(false)
   const [attendeesCount, setAttendeesCount] = useState(0)
-  
-  // const supabase = createClient()
 
   useEffect(() => {
     if (params.id) {

@@ -1,5 +1,7 @@
 # Development Guide for Remote Agents
 
+> **⚠️ IMPORTANT NOTE**: This guide contains references to Supabase, but the project now uses **AWS DynamoDB, Cognito, and Lambda**. Please refer to the main README.md for current setup instructions. This document will be updated to reflect the AWS stack.
+
 ## 🎯 Quick Start Checklist
 
 ### Before You Begin

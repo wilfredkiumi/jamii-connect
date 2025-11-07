@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -81,8 +80,6 @@ export default function PostJobPage() {
     is_diaspora_friendly: false,
     expires_at: '',
   })
-
-  // const supabase = createClient()
 
   const countries = [
     'Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Ethiopia', 'Morocco', 'Egypt',
@@ -204,9 +201,14 @@ export default function PostJobPage() {
         return
       }
 
-      // Here you would submit to Supabase
-      // const { data, error } = await supabase.from('jobs').insert([formData])
-      
+      // TODO: Connect to AWS API Gateway endpoint
+      // const apiEndpoint = process.env.NEXT_PUBLIC_API_ENDPOINT
+      // const response = await fetch(`${apiEndpoint}/jobs`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(formData)
+      // })
+
       toast.success('Job posted successfully!')
       router.push('/jobs')
       

@@ -1,5 +1,7 @@
 # Jamii Connect - Kenyan Diaspora UK Platform Development Guide
 
+> **⚠️ IMPORTANT NOTE**: This guide contains references to Supabase, but the project now uses **AWS DynamoDB, Cognito, and Lambda**. Please refer to the main README.md and infrastructure/README.md for current setup instructions. This document will be updated to reflect the AWS stack.
+
 ## Project Overview
 A modern Progressive Web App (PWA) connecting the Kenyan diaspora in the UK through jobs, events, community discussions, and services.
 
