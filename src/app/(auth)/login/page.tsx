@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 
-// Force dynamic rendering to avoid build-time Supabase initialization
-export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { signInUser } from '@/lib/amplify/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,22 +17,21 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      const { isSignedIn, nextStep } = await signInUser(email, password)
 
-      if (error) throw error
-
-      toast.success('Welcome back!')
-      router.push('/dashboard')
+      if (isSignedIn) {
+        toast.success('Welcome back!')
+        router.push('/dashboard')
+      } else if (nextStep) {
+        // Handle additional steps if needed (e.g., MFA, password reset)
+        toast.error('Additional authentication steps required')
+      }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Something went wrong. Please try again.'
       toast.error(errorMessage)

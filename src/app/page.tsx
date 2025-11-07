@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Users, Briefcase, Calendar, Home, ChevronRight } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Users, Briefcase, Calendar, Home, ChevronRight, UserPlus, Search, MessageSquare } from 'lucide-react'
 
 export default function LandingPage() {
   const features = [
@@ -27,6 +28,62 @@ export default function LandingPage() {
     }
   ]
 
+  const howItWorksSteps = [
+    {
+      icon: <UserPlus className="w-8 h-8 text-accent-green" />,
+      title: "1. Create Your Profile",
+      description: "Sign up in minutes and tell us about yourself, your interests, and where you are in the UK."
+    },
+    {
+      icon: <Search className="w-8 h-8 text-accent-green" />,
+      title: "2. Explore & Discover",
+      description: "Browse job listings, upcoming events, trusted services, and connect with other members."
+    },
+    {
+      icon: <MessageSquare className="w-8 h-8 text-accent-green" />,
+      title: "3. Engage & Grow",
+      description: "Participate in forums, share your experiences, and contribute to a thriving diaspora community."
+    },
+  ];
+
+  const featuredContent = [
+    {
+      type: "Article",
+      title: "Navigating UK Immigration as a Kenyan",
+      description: "An essential guide for new arrivals and those looking to extend their stay.",
+      link: "#",
+      image: "/placeholder-article.jpg"
+    },
+    {
+      type: "Event",
+      title: "Annual Kenyan Diaspora Gala 2025",
+      description: "Join us for a night of celebration, networking, and cultural showcase.",
+      link: "#",
+      image: "/placeholder-event.jpg"
+    },
+    {
+      type: "Job Success Story",
+      title: "From Nairobi to NHS: My Journey as a Nurse",
+      description: "Hear from Sarah Wanjiru on her successful transition to working in the UK healthcare system.",
+      link: "#",
+      image: "/placeholder-job.jpg"
+    },
+    {
+      type: "Community Story",
+      title: "Building a Home Away From Home: The Kenyan Community Garden",
+      description: "Discover how a group of volunteers transformed an unused plot into a vibrant community space.",
+      link: "#",
+      image: "/placeholder-community-garden.jpg"
+    },
+    {
+      type: "Volunteer Spotlight",
+      title: "Meet John: Bridging Gaps Through Mentorship",
+      description: "John shares his passion for guiding new Kenyan graduates in the UK job market.",
+      link: "/blog/meet-john-mentorship",
+      image: "/placeholder-john.jpg"
+    },
+  ];
+
   const testimonials = [
     {
       name: "Sarah Wanjiru",
@@ -43,22 +100,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Hero Section - 60% neutral background */}
-      <nav className="container mx-auto px-4 py-6 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <div className="w-10 h-10 bg-accent-green rounded-full flex items-center justify-center">
-            <span className="text-white font-bold">JC</span>
-          </div>
-          <span className="text-xl font-bold text-text-primary">Jamii Connect</span>
-        </div>
-        <div className="flex gap-4">
-          <Button variant="ghost" className="text-text-secondary hover:text-text-primary" asChild>
-            <Link href="/login">Log in</Link>
-          </Button>
-          <Button className="bg-accent-green hover:bg-green-700 text-white" asChild>
-            <Link href="/signup">Get Started</Link>
-          </Button>
-        </div>
-      </nav>
+      
 
       <section className="container mx-auto px-4 py-20 text-center">
         <h1 className="text-5xl md:text-6xl font-bold mb-6 text-text-primary">
@@ -97,6 +139,24 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="bg-white py-20">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-12 text-text-primary">How It Works</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {howItWorksSteps.map((step, index) => (
+              <div key={index} className="flex flex-col items-center p-6">
+                <div className="mb-4 p-4 rounded-full bg-blue-100 text-blue-600">
+                  {step.icon}
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-text-primary">{step.title}</h3>
+                <p className="text-text-secondary">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features Section - 30% secondary background */}
       <section id="features" className="bg-secondary-warmth py-20">
         <div className="container mx-auto px-4">
@@ -108,6 +168,30 @@ export default function LandingPage() {
                   <div className="mb-4">{feature.icon}</div>
                   <h3 className="text-xl font-semibold mb-2 text-text-primary">{feature.title}</h3>
                   <p className="text-text-secondary">{feature.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Content Section */}
+      <section className="bg-neutral-50 py-20">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12 text-text-primary">Featured Content & Stories</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {featuredContent.map((item, index) => (
+              <Card key={index} className="bg-white border-neutral-200 hover:shadow-lg transition-shadow">
+                <img src={item.image} alt={item.title} className="w-full h-48 object-cover rounded-t-lg" />
+                <CardContent className="p-6">
+                  <Badge variant="secondary" className="mb-2 bg-accent-green/20 text-accent-green">{item.type}</Badge>
+                  <h3 className="text-xl font-semibold mb-2 text-text-primary">{item.title}</h3>
+                  <p className="text-text-secondary mb-4">{item.description}</p>
+                  <Link href={item.link} passHref>
+                    <Button variant="link" className="p-0 text-accent-green hover:text-green-700">
+                      Read More <ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
