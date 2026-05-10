@@ -6,7 +6,7 @@ const amplifyConfig = {
       userPoolId: process.env.NEXT_PUBLIC_USER_POOL_ID!,
       userPoolClientId: process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID!,
       identityPoolId: process.env.NEXT_PUBLIC_IDENTITY_POOL_ID!,
-      region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
+      region: process.env.NEXT_PUBLIC_AWS_REGION || 'eu-west-1',
       loginWith: {
         email: true,
         username: false,
@@ -23,14 +23,6 @@ const amplifyConfig = {
         requireUppercase: true,
         requireNumbers: true,
         requireSpecialCharacters: true,
-      },
-    },
-  },
-  API: {
-    REST: {
-      JamiiConnectAPI: {
-        endpoint: process.env.NEXT_PUBLIC_API_ENDPOINT!,
-        region: process.env.NEXT_PUBLIC_AWS_REGION || 'us-east-1',
       },
     },
   },

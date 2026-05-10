@@ -2,7 +2,6 @@ import { cookies } from 'next/headers';
 import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth/server';
 import { runWithAmplifyServerContext } from '@aws-amplify/adapter-nextjs';
 import { configureAmplify } from './config';
-import { getUserProfile } from './auth';
 import type { UserProfile } from './auth';
 
 // Configure Amplify for server-side usage

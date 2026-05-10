@@ -1,11 +1,13 @@
 -- Jamii Connect Database Schema
--- Pan-African & Caribbean Diaspora Platform
+-- Kenyan Diaspora UK Platform
+-- Auth: AWS Cognito (vumi-central-pool)
+-- DB: Postgres (local dev, Neon for prod)
 
--- Enable necessary extensions
+-- Enable extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Create custom types
+-- Custom types
 CREATE TYPE job_type AS ENUM ('full-time', 'part-time', 'contract', 'freelance', 'internship');
 CREATE TYPE work_type AS ENUM ('remote', 'hybrid', 'on-site');
 CREATE TYPE experience_level AS ENUM ('entry', 'mid', 'senior', 'executive');
@@ -14,9 +16,11 @@ CREATE TYPE application_status AS ENUM ('pending', 'reviewed', 'accepted', 'reje
 CREATE TYPE connection_status AS ENUM ('pending', 'accepted', 'declined');
 CREATE TYPE attendance_status AS ENUM ('attending', 'maybe', 'not_attending');
 
--- Profiles table (extends Supabase auth.users)
+-- Profiles table (linked to Cognito via sub)
 CREATE TABLE profiles (
-  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  cognito_sub TEXT UNIQUE NOT NULL,
+  email TEXT UNIQUE NOT NULL,
   username TEXT UNIQUE,
   full_name TEXT,
   avatar_url TEXT,
@@ -57,7 +61,7 @@ CREATE TABLE posts (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Post likes table
+-- Post likes
 CREATE TABLE post_likes (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   post_id UUID REFERENCES posts(id) ON DELETE CASCADE NOT NULL,
@@ -66,7 +70,7 @@ CREATE TABLE post_likes (
   UNIQUE(post_id, user_id)
 );
 
--- Post comments table
+-- Post comments
 CREATE TABLE post_comments (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   post_id UUID REFERENCES posts(id) ON DELETE CASCADE NOT NULL,
@@ -89,7 +93,7 @@ CREATE TABLE jobs (
   work_type work_type NOT NULL,
   salary_min INTEGER,
   salary_max INTEGER,
-  currency TEXT DEFAULT 'USD',
+  currency TEXT DEFAULT 'GBP',
   description TEXT NOT NULL,
   requirements TEXT[] DEFAULT '{}',
   benefits TEXT[] DEFAULT '{}',
@@ -100,6 +104,7 @@ CREATE TABLE jobs (
   application_url TEXT,
   application_email TEXT,
   is_diaspora_friendly BOOLEAN DEFAULT FALSE,
+  visa_sponsorship BOOLEAN DEFAULT FALSE,
   is_active BOOLEAN DEFAULT TRUE,
   views_count INTEGER DEFAULT 0,
   applications_count INTEGER DEFAULT 0,
@@ -107,7 +112,7 @@ CREATE TABLE jobs (
   expires_at TIMESTAMP WITH TIME ZONE
 );
 
--- Job applications table
+-- Job applications
 CREATE TABLE job_applications (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   job_id UUID REFERENCES jobs(id) ON DELETE CASCADE NOT NULL,
@@ -134,7 +139,7 @@ CREATE TABLE events (
   is_virtual BOOLEAN DEFAULT FALSE,
   event_type event_type NOT NULL,
   price DECIMAL(10,2),
-  currency TEXT DEFAULT 'USD',
+  currency TEXT DEFAULT 'GBP',
   max_attendees INTEGER,
   current_attendees INTEGER DEFAULT 0,
   is_free BOOLEAN DEFAULT TRUE,
@@ -144,7 +149,7 @@ CREATE TABLE events (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Event attendees table
+-- Event attendees
 CREATE TABLE event_attendees (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   event_id UUID REFERENCES events(id) ON DELETE CASCADE NOT NULL,
@@ -165,22 +170,36 @@ CREATE TABLE services (
   contact_email TEXT,
   website TEXT,
   location TEXT,
+  service_area TEXT[] DEFAULT '{}',
+  pricing_type TEXT DEFAULT 'custom',
+  pricing_amount DECIMAL(10,2),
+  pricing_currency TEXT DEFAULT 'GBP',
   is_verified BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  rating DECIMAL(3,2) DEFAULT 0,
+  review_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Connections table (for networking)
+-- Connections (networking)
 CREATE TABLE connections (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   requester_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   addressee_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   status connection_status DEFAULT 'pending',
+  message TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(requester_id, addressee_id)
 );
 
--- Create indexes for better performance
+-- Indexes
+CREATE INDEX idx_profiles_cognito_sub ON profiles(cognito_sub);
+CREATE INDEX idx_profiles_country ON profiles(country);
+CREATE INDEX idx_profiles_heritage_countries ON profiles USING GIN(heritage_countries);
+CREATE INDEX idx_profiles_skills ON profiles USING GIN(skills);
+CREATE INDEX idx_profiles_is_mentor ON profiles(is_mentor);
+
 CREATE INDEX idx_posts_user_id ON posts(user_id);
 CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
 CREATE INDEX idx_posts_tags ON posts USING GIN(tags);
@@ -200,12 +219,11 @@ CREATE INDEX idx_events_country ON events(country);
 CREATE INDEX idx_events_event_type ON events(event_type);
 CREATE INDEX idx_events_tags ON events USING GIN(tags);
 
-CREATE INDEX idx_profiles_country ON profiles(country);
-CREATE INDEX idx_profiles_heritage_countries ON profiles USING GIN(heritage_countries);
-CREATE INDEX idx_profiles_skills ON profiles USING GIN(skills);
-CREATE INDEX idx_profiles_is_mentor ON profiles(is_mentor);
+CREATE INDEX idx_connections_requester ON connections(requester_id);
+CREATE INDEX idx_connections_addressee ON connections(addressee_id);
+CREATE INDEX idx_connections_status ON connections(status);
 
--- Create functions for updating timestamps
+-- Auto-update timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -214,75 +232,26 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Create triggers for updated_at
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_posts_updated_at BEFORE UPDATE ON posts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_events_updated_at BEFORE UPDATE ON events
+CREATE TRIGGER update_post_comments_updated_at BEFORE UPDATE ON post_comments
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_jobs_updated_at BEFORE UPDATE ON jobs
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_job_applications_updated_at BEFORE UPDATE ON job_applications
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_connections_updated_at BEFORE UPDATE ON connections
+CREATE TRIGGER update_events_updated_at BEFORE UPDATE ON events
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Row Level Security (RLS) policies
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE post_likes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE post_comments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE job_applications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE event_attendees ENABLE ROW LEVEL SECURITY;
-ALTER TABLE services ENABLE ROW LEVEL SECURITY;
-ALTER TABLE connections ENABLE ROW LEVEL SECURITY;
+CREATE TRIGGER update_services_updated_at BEFORE UPDATE ON services
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Profiles policies
-CREATE POLICY "Public profiles are viewable by everyone" ON profiles
-  FOR SELECT USING (true);
-
-CREATE POLICY "Users can insert their own profile" ON profiles
-  FOR INSERT WITH CHECK (auth.uid() = id);
-
-CREATE POLICY "Users can update their own profile" ON profiles
-  FOR UPDATE USING (auth.uid() = id);
-
--- Posts policies
-CREATE POLICY "Posts are viewable by everyone" ON posts
-  FOR SELECT USING (true);
-
-CREATE POLICY "Users can insert their own posts" ON posts
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own posts" ON posts
-  FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete their own posts" ON posts
-  FOR DELETE USING (auth.uid() = user_id);
-
--- Jobs policies
-CREATE POLICY "Jobs are viewable by everyone" ON jobs
-  FOR SELECT USING (true);
-
-CREATE POLICY "Users can insert their own jobs" ON jobs
-  FOR INSERT WITH CHECK (auth.uid() = posted_by);
-
-CREATE POLICY "Users can update their own jobs" ON jobs
-  FOR UPDATE USING (auth.uid() = posted_by);
-
--- Events policies
-CREATE POLICY "Events are viewable by everyone" ON events
-  FOR SELECT USING (true);
-
-CREATE POLICY "Users can insert their own events" ON events
-  FOR INSERT WITH CHECK (auth.uid() = created_by);
-
-CREATE POLICY "Users can update their own events" ON events
-  FOR UPDATE USING (auth.uid() = created_by);
-
--- Additional policies for other tables would follow similar patterns...
+CREATE TRIGGER update_connections_updated_at BEFORE UPDATE ON connections
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
