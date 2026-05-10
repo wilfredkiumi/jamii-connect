@@ -7,26 +7,26 @@ import { forumCategories } from '@/lib/forums-data';
 export default function ForumsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">Community Forums</h1>
+      <h1 className="text-display text-4xl font-bold text-[var(--clay)] dark:text-[var(--clay-50)] mb-8">Community Forums</h1>
 
       {forumCategories.map((category) => (
         <div key={category.id} className="mb-10">
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">{category.name}</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">{category.description}</p>
+          <h2 className="text-2xl font-semibold text-[var(--clay-800)] dark:text-[var(--clay-100)] mb-4">{category.name}</h2>
+          <p className="text-[var(--clay-600)] dark:text-[var(--clay-300)] mb-6">{category.description}</p>
           
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {category.forums.map((forum) => (
               <Card key={forum.id} className="hover:shadow-lg transition-shadow duration-200 ease-in-out">
                 <CardHeader>
                   <CardTitle>
-                    <Link href={`/forums/${category.slug}/${forum.slug}`} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200">
+                    <Link href={`/forums/${category.slug}/${forum.slug}`} className="text-[var(--terracotta)] hover:text-[var(--terracotta-light)] dark:text-[var(--terracotta-light)] dark:hover:text-[var(--clay-200)]">
                       {forum.name}
                     </Link>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-700 dark:text-gray-300 mb-2">{forum.description}</p>
-                  <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-[var(--clay-600)] dark:text-[var(--clay-300)] mb-2">{forum.description}</p>
+                  <div className="flex justify-between items-center text-sm text-[var(--clay-500)] dark:text-[var(--clay-400)]">
                     <span>Posts: {forum.postCount}</span>
                     <span>Last Activity: {forum.lastActivity}</span>
                   </div>

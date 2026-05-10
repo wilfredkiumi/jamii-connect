@@ -295,7 +295,7 @@ export default function DashboardPage() {
     <div className="container mx-auto px-4 py-8 space-y-8">
       {/* Welcome Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+        <h1 className="text-display text-3xl md:text-4xl font-bold text-foreground">
           Welcome back{user ? `, ${user.firstName}` : ''}! 🌍
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -305,13 +305,13 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-l-heritage-green">
+        <Card className="border-l-4 border-l-[var(--terracotta)]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Community Members</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-heritage-green">{stats.totalMembers.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-[var(--terracotta)]">{stats.totalMembers.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">Across 50+ countries</p>
           </CardContent>
         </Card>
@@ -322,7 +322,7 @@ export default function DashboardPage() {
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.activeJobs.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-[var(--terracotta)]">{stats.activeJobs.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">+12% from last month</p>
           </CardContent>
         </Card>
@@ -338,13 +338,13 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-heritage-red">
+        <Card className="border-l-4 border-l-[var(--gold)]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">New Connections</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-heritage-red">{stats.newConnections}</div>
+            <div className="text-2xl font-bold text-[var(--gold)]">{stats.newConnections}</div>
             <p className="text-xs text-muted-foreground">This week</p>
           </CardContent>
         </Card>
@@ -352,7 +352,7 @@ export default function DashboardPage() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Button asChild className="h-20 bg-heritage-green hover:bg-green-700">
+        <Button asChild className="h-20 bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)]">
           <Link href="/posts/new">
             <div className="flex flex-col items-center space-y-2">
               <Plus className="h-5 w-5" />

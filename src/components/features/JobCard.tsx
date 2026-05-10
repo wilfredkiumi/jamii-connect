@@ -103,22 +103,22 @@ export default function JobCard({ job, onBookmark, onApply }: JobCardProps) {
 
   const getJobTypeColor = (type: string) => {
     const colors = {
-      'full-time': 'bg-green-100 text-green-800',
-      'part-time': 'bg-blue-100 text-blue-800',
-      'contract': 'bg-purple-100 text-purple-800',
-      'freelance': 'bg-orange-100 text-orange-800',
-      'internship': 'bg-yellow-100 text-yellow-800',
+      'full-time': 'bg-[var(--forest)]/10 text-[var(--forest)]',
+      'part-time': 'bg-[var(--indigo)]/10 text-[var(--indigo)]',
+      'contract': 'bg-[var(--terracotta)]/10 text-[var(--terracotta)]',
+      'freelance': 'bg-[var(--gold)]/10 text-[var(--gold)]',
+      'internship': 'bg-[var(--gold-light)]/10 text-[var(--gold)]',
     }
-    return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+    return colors[type as keyof typeof colors] || 'bg-[var(--clay-100)] text-[var(--clay-600)]'
   }
 
   const getWorkTypeColor = (type: string) => {
     const colors = {
-      'remote': 'bg-emerald-100 text-emerald-800',
-      'hybrid': 'bg-indigo-100 text-indigo-800',
-      'on-site': 'bg-slate-100 text-slate-800',
+      'remote': 'bg-[var(--forest-light)]/10 text-[var(--forest)]',
+      'hybrid': 'bg-[var(--indigo)]/10 text-[var(--indigo)]',
+      'on-site': 'bg-[var(--clay-100)] text-[var(--clay-600)]',
     }
-    return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+    return colors[type as keyof typeof colors] || 'bg-[var(--clay-100)] text-[var(--clay-600)]'
   }
 
   const getExperienceLevel = (level: string) => {
@@ -152,12 +152,12 @@ export default function JobCard({ job, onBookmark, onApply }: JobCardProps) {
   }
 
   return (
-    <Card className="w-full border border-neutral-200 hover:border-neutral-300 transition-all hover:shadow-md">
+    <Card className="w-full border border-[var(--clay-200)] hover:border-[var(--clay-300)] transition-all hover:shadow-md">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3 flex-1">
             {job.company_logo && (
-              <div className="w-12 h-12 relative rounded-lg overflow-hidden border border-neutral-200">
+              <div className="w-12 h-12 relative rounded-lg overflow-hidden border border-[var(--clay-200)]">
                 <Image
                   src={job.company_logo}
                   alt={`${job.company} logo`}
@@ -168,29 +168,29 @@ export default function JobCard({ job, onBookmark, onApply }: JobCardProps) {
             )}
             <div className="flex-1 min-w-0">
               <Link href={`/jobs/${job.id}`} className="hover:underline">
-                <h3 className="font-semibold text-text-primary text-lg leading-tight">{job.title}</h3>
+                <h3 className="font-semibold text-[var(--clay)] text-lg leading-tight">{job.title}</h3>
               </Link>
               <div className="flex items-center space-x-2 mt-1">
-                <Building2 className="h-4 w-4 text-text-muted" />
-                <span className="text-text-secondary font-medium">{job.company}</span>
+                <Building2 className="h-4 w-4 text-[var(--clay-500)]" />
+                <span className="text-[var(--clay-600)] font-medium">{job.company}</span>
                 {job.company_size && (
                   <>
-                    <span className="text-text-muted">•</span>
-                    <span className="text-text-muted text-sm">{job.company_size}</span>
+                    <span className="text-[var(--clay-500)]">•</span>
+                    <span className="text-[var(--clay-500)] text-sm">{job.company_size}</span>
                   </>
                 )}
               </div>
               <div className="flex items-center space-x-2 mt-1">
                 <span>{getCountryFlag(job.country)}</span>
-                <MapPin className="h-4 w-4 text-text-muted" />
-                <span className="text-text-muted text-sm">{job.location}, {job.country}</span>
+                <MapPin className="h-4 w-4 text-[var(--clay-500)]" />
+                <span className="text-[var(--clay-500)] text-sm">{job.location}, {job.country}</span>
               </div>
             </div>
           </div>
           
           <div className="flex items-center space-x-2">
             {job.is_diaspora_friendly && (
-              <Badge variant="secondary" className="bg-accent-green/10 text-accent-green border-accent-green/20">
+              <Badge variant="secondary" className="bg-[var(--terracotta)]/10 text-[var(--terracotta)] border-[var(--terracotta)]/20">
                 Diaspora Friendly
               </Badge>
             )}
@@ -231,27 +231,27 @@ export default function JobCard({ job, onBookmark, onApply }: JobCardProps) {
             </Badge>
           </div>
 
-          <p className="text-text-secondary text-sm line-clamp-2">{job.description}</p>
+          <p className="text-[var(--clay-600)] text-sm line-clamp-2">{job.description}</p>
 
           {job.skills.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {job.skills.slice(0, 5).map((skill, index) => (
                 <span
                   key={index}
-                  className="inline-block px-2 py-1 bg-neutral-100 text-text-muted text-xs rounded-full"
+                  className="inline-block px-2 py-1 bg-[var(--clay-100)] text-[var(--clay-500)] text-xs rounded-full"
                 >
                   {skill}
                 </span>
               ))}
               {job.skills.length > 5 && (
-                <span className="inline-block px-2 py-1 bg-neutral-100 text-text-muted text-xs rounded-full">
+                <span className="inline-block px-2 py-1 bg-[var(--clay-100)] text-[var(--clay-500)] text-xs rounded-full">
                   +{job.skills.length - 5} more
                 </span>
               )}
             </div>
           )}
 
-          <div className="flex items-center justify-between text-sm text-text-muted">
+          <div className="flex items-center justify-between text-sm text-[var(--clay-500)]">
             <div className="flex items-center space-x-4">
               {formatSalary() && (
                 <div className="flex items-center space-x-1">
@@ -272,14 +272,14 @@ export default function JobCard({ job, onBookmark, onApply }: JobCardProps) {
         </div>
       </CardContent>
 
-      <CardFooter className="pt-3 border-t border-neutral-100">
+      <CardFooter className="pt-3 border-t border-[var(--clay-100)]">
         <div className="flex items-center justify-between w-full">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleBookmark}
             className={`flex items-center space-x-2 ${
-              isBookmarked ? 'text-accent-green' : 'text-text-muted hover:text-accent-green'
+              isBookmarked ? 'text-[var(--terracotta)]' : 'text-[var(--clay-500)] hover:text-[var(--terracotta)]'
             }`}
           >
             <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
@@ -290,9 +290,9 @@ export default function JobCard({ job, onBookmark, onApply }: JobCardProps) {
             <Button variant="outline" size="sm" asChild>
               <Link href={`/jobs/${job.id}`}>View Details</Link>
             </Button>
-            <Button 
-              size="sm" 
-              className="bg-accent-green hover:bg-green-700 text-white"
+            <Button
+              size="sm"
+              className="bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)] text-white"
               onClick={handleApply}
             >
               Apply Now

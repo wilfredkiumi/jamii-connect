@@ -114,14 +114,14 @@ export default function EventCard({ event, onBookmark, onRSVP, onShare }: EventC
 
   const getEventTypeColor = (type: string) => {
     const colors = {
-      'conference': 'bg-blue-100 text-blue-800',
-      'workshop': 'bg-green-100 text-green-800',
-      'networking': 'bg-purple-100 text-purple-800',
-      'cultural': 'bg-orange-100 text-orange-800',
-      'business': 'bg-indigo-100 text-indigo-800',
-      'social': 'bg-pink-100 text-pink-800',
+      'conference': 'bg-[var(--indigo)]/10 text-[var(--indigo)]',
+      'workshop': 'bg-[var(--forest)]/10 text-[var(--forest)]',
+      'networking': 'bg-[var(--terracotta)]/10 text-[var(--terracotta)]',
+      'cultural': 'bg-[var(--gold)]/10 text-[var(--gold)]',
+      'business': 'bg-[var(--clay-800)]/10 text-[var(--clay-800)]',
+      'social': 'bg-[var(--terracotta-light)]/10 text-[var(--terracotta)]',
     }
-    return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+    return colors[type as keyof typeof colors] || 'bg-[var(--clay-100)] text-[var(--clay-600)]'
   }
 
   const formatPrice = () => {
@@ -142,11 +142,11 @@ export default function EventCard({ event, onBookmark, onRSVP, onShare }: EventC
     const endDate = event.end_date ? new Date(event.end_date) : startDate
 
     if (isBefore(now, startDate)) {
-      return { status: 'upcoming', color: 'bg-green-100 text-green-800' }
+      return { status: 'upcoming', color: 'bg-[var(--forest)]/10 text-[var(--forest)]' }
     } else if (isAfter(now, endDate)) {
-      return { status: 'past', color: 'bg-gray-100 text-gray-800' }
+      return { status: 'past', color: 'bg-[var(--clay-100)] text-[var(--clay-600)]' }
     } else {
-      return { status: 'ongoing', color: 'bg-red-100 text-red-800' }
+      return { status: 'ongoing', color: 'bg-[var(--terracotta)]/10 text-[var(--terracotta)]' }
     }
   }
 
@@ -175,7 +175,7 @@ export default function EventCard({ event, onBookmark, onRSVP, onShare }: EventC
   const canRSVP = eventStatus.status === 'upcoming' && !isEventFull
 
   return (
-    <Card className="w-full border border-neutral-200 hover:border-neutral-300 transition-all hover:shadow-md">
+    <Card className="w-full border border-[var(--clay-200)] hover:border-[var(--clay-300)] transition-all hover:shadow-md">
       {event.image_url && (
         <div className="relative w-full h-48 overflow-hidden rounded-t-lg">
           <Image
@@ -190,7 +190,7 @@ export default function EventCard({ event, onBookmark, onRSVP, onShare }: EventC
             </Badge>
           </div>
           <div className="absolute top-3 right-3">
-            <Badge className={event.is_free ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}>
+            <Badge className={event.is_free ? 'bg-[var(--forest)]/10 text-[var(--forest)]' : 'bg-[var(--indigo)]/10 text-[var(--indigo)]'}>
               {formatPrice()}
             </Badge>
           </div>
@@ -201,7 +201,7 @@ export default function EventCard({ event, onBookmark, onRSVP, onShare }: EventC
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <Link href={`/events/${event.id}`} className="hover:underline">
-              <h3 className="font-semibold text-text-primary text-lg leading-tight">{event.title}</h3>
+              <h3 className="font-semibold text-[var(--clay)] text-lg leading-tight">{event.title}</h3>
             </Link>
             <div className="flex items-center space-x-2 mt-2">
               <Avatar className="h-6 w-6">
@@ -210,7 +210,7 @@ export default function EventCard({ event, onBookmark, onRSVP, onShare }: EventC
                   {event.organizer.name.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-text-secondary text-sm">
+              <span className="text-[var(--clay-600)] text-sm">
                 by {event.organizer.name}
                 {event.organizer.organization && ` • ${event.organizer.organization}`}
               </span>
@@ -257,9 +257,9 @@ export default function EventCard({ event, onBookmark, onRSVP, onShare }: EventC
             )}
           </div>
 
-          <p className="text-text-secondary text-sm line-clamp-2">{event.description}</p>
+          <p className="text-[var(--clay-600)] text-sm line-clamp-2">{event.description}</p>
 
-          <div className="space-y-2 text-sm text-text-muted">
+          <div className="space-y-2 text-sm text-[var(--clay-500)]">
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4" />
               <span>
@@ -298,13 +298,13 @@ export default function EventCard({ event, onBookmark, onRSVP, onShare }: EventC
                 <Link
                   key={index}
                   href={`/events?tag=${encodeURIComponent(tag)}`}
-                  className="inline-block px-2 py-1 bg-neutral-100 hover:bg-neutral-200 text-text-muted text-xs rounded-full transition-colors"
+                  className="inline-block px-2 py-1 bg-[var(--clay-100)] hover:bg-[var(--clay-200)] text-[var(--clay-500)] text-xs rounded-full transition-colors"
                 >
                   #{tag}
                 </Link>
               ))}
               {event.tags.length > 3 && (
-                <span className="inline-block px-2 py-1 bg-neutral-100 text-text-muted text-xs rounded-full">
+                <span className="inline-block px-2 py-1 bg-[var(--clay-100)] text-[var(--clay-500)] text-xs rounded-full">
                   +{event.tags.length - 3} more
                 </span>
               )}
@@ -313,14 +313,14 @@ export default function EventCard({ event, onBookmark, onRSVP, onShare }: EventC
         </div>
       </CardContent>
 
-      <CardFooter className="pt-3 border-t border-neutral-100">
+      <CardFooter className="pt-3 border-t border-[var(--clay-100)]">
         <div className="flex items-center justify-between w-full">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleBookmark}
             className={`flex items-center space-x-2 ${
-              isBookmarked ? 'text-accent-green' : 'text-text-muted hover:text-accent-green'
+              isBookmarked ? 'text-[var(--terracotta)]' : 'text-[var(--clay-500)] hover:text-[var(--terracotta)]'
             }`}
           >
             <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
@@ -331,14 +331,14 @@ export default function EventCard({ event, onBookmark, onRSVP, onShare }: EventC
             <Button variant="outline" size="sm" asChild>
               <Link href={`/events/${event.id}`}>View Details</Link>
             </Button>
-            
+
             {canRSVP ? (
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 className={`${
-                  isAttending 
-                    ? 'bg-accent-green hover:bg-green-700 text-white' 
-                    : 'bg-accent-green hover:bg-green-700 text-white'
+                  isAttending
+                    ? 'bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)] text-white'
+                    : 'bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)] text-white'
                 }`}
                 onClick={handleRSVP}
               >

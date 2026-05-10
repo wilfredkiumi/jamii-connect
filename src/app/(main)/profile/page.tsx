@@ -249,13 +249,13 @@ export default function ProfilePage() {
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse space-y-6">
           <div className="flex items-center space-x-4">
-            <div className="w-24 h-24 bg-neutral-200 rounded-full"></div>
+            <div className="w-24 h-24 bg-[var(--clay-200)] rounded-full"></div>
             <div className="space-y-2">
-              <div className="h-6 bg-neutral-200 rounded w-48"></div>
-              <div className="h-4 bg-neutral-200 rounded w-32"></div>
+              <div className="h-6 bg-[var(--clay-200)] rounded w-48"></div>
+              <div className="h-4 bg-[var(--clay-200)] rounded w-32"></div>
             </div>
           </div>
-          <div className="h-96 bg-neutral-200 rounded"></div>
+          <div className="h-96 bg-[var(--clay-200)] rounded"></div>
         </div>
       </div>
     )
@@ -264,7 +264,7 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-4">Profile not found</h1>
+        <h1 className="text-display text-2xl font-bold text-foreground mb-4">Profile not found</h1>
         <p className="text-muted-foreground">Please log in to view your profile.</p>
       </div>
     )
@@ -278,16 +278,16 @@ export default function ProfilePage() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
             <div className="flex items-center space-x-6">
               <div className="relative">
-                <Avatar className="w-24 h-24 border-4 border-heritage-green/20">
+                <Avatar className="w-24 h-24 border-4 border-[var(--terracotta)]/20">
                   <AvatarImage src={profile.profileImage} alt={`${profile.firstName} ${profile.lastName}`} />
-                  <AvatarFallback className="text-2xl bg-heritage-green text-white">
+                  <AvatarFallback className="text-2xl bg-[var(--terracotta)] text-white">
                     {profile.firstName?.[0]}{profile.lastName?.[0]}
                   </AvatarFallback>
                 </Avatar>
                 {editing && (
                   <Button
                     size="sm" 
-                    className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 p-0 bg-heritage-green hover:bg-green-700"
+                    className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 p-0 bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)]"
                   >
                     <Camera className="h-4 w-4" />
                   </Button>
@@ -295,9 +295,9 @@ export default function ProfilePage() {
               </div>
               <div>
                 <div className="flex items-center space-x-2">
-                  <h1 className="text-3xl font-bold text-foreground">{profile.firstName} {profile.lastName}</h1>
+                  <h1 className="text-display text-3xl font-bold text-foreground">{profile.firstName} {profile.lastName}</h1>
                   {profile.verified && (
-                    <Shield className="h-6 w-6 text-heritage-green" />
+                    <Shield className="h-6 w-6 text-[var(--terracotta)]" />
                   )}
                 </div>
                 <div className="flex items-center space-x-2 text-muted-foreground mt-1">
@@ -306,7 +306,7 @@ export default function ProfilePage() {
                   {profile.company && (
                     <>
                       <span>at</span>
-                      <span className="font-medium text-heritage-green">{profile.company}</span>
+                      <span className="font-medium text-[var(--terracotta)]">{profile.company}</span>
                     </>
                   )}
                 </div>
@@ -331,13 +331,13 @@ export default function ProfilePage() {
             </div>
             <div className="flex items-center space-x-2">
               {profile.isMentor && (
-                <Badge className="bg-heritage-green text-white flex items-center space-x-1">
+                <Badge className="bg-[var(--terracotta)] text-white flex items-center space-x-1">
                   <Star className="h-3 w-3" />
                   <span>Mentor</span>
                 </Badge>
               )}
               {profile.isSeekingMentorship && (
-                <Badge variant="outline" className="border-blue-500 text-blue-600">
+                <Badge variant="outline" className="border-blue-500 text-[var(--terracotta)]">
                   <Target className="h-3 w-3 mr-1" />
                   Seeking Mentorship
                 </Badge>
@@ -345,7 +345,7 @@ export default function ProfilePage() {
               <Button
                 onClick={() => setEditing(!editing)}
                 variant={editing ? "outline" : "default"}
-                className={editing ? "" : "bg-heritage-green hover:bg-green-700 text-white"}
+                className={editing ? "" : "bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)] text-white"}
               >
                 {editing ? (
                   <>
@@ -363,7 +363,7 @@ export default function ProfilePage() {
                 <Button
                   onClick={handleSave}
                   disabled={saving}
-                  className="bg-heritage-green hover:bg-green-700 text-white"
+                  className="bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)] text-white"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {saving ? 'Saving...' : 'Save'}
@@ -398,7 +398,7 @@ export default function ProfilePage() {
                   rows={4}
                 />
               ) : (
-                <p className="text-text-secondary">{profile.bio}</p>
+                <p className="text-[var(--clay-600)]">{profile.bio}</p>
               )}
             </CardContent>
           </Card>
@@ -473,19 +473,19 @@ export default function ProfilePage() {
                   ) : (
                     <>
                       {profile.linkedin_url && (
-                        <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-600 hover:underline">
+                        <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center text-[var(--terracotta)] hover:underline">
                           <ExternalLink className="h-4 w-4 mr-2" />
                           LinkedIn
                         </a>
                       )}
                       {profile.twitter_url && (
-                        <a href={profile.twitter_url} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-600 hover:underline">
+                        <a href={profile.twitter_url} target="_blank" rel="noopener noreferrer" className="flex items-center text-[var(--terracotta)] hover:underline">
                           <ExternalLink className="h-4 w-4 mr-2" />
                           Twitter
                         </a>
                       )}
                       {profile.website_url && (
-                        <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-600 hover:underline">
+                        <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="flex items-center text-[var(--terracotta)] hover:underline">
                           <ExternalLink className="h-4 w-4 mr-2" />
                           Website
                         </a>
@@ -543,7 +543,7 @@ export default function ProfilePage() {
                   placeholder="Your education background"
                 />
               ) : (
-                <p className="text-text-secondary">{profile.education}</p>
+                <p className="text-[var(--clay-600)]">{profile.education}</p>
               )}
             </CardContent>
           </Card>
@@ -636,18 +636,18 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-medium">Available as Mentor</h3>
-                  <p className="text-sm text-text-muted">Help others in the diaspora community</p>
+                  <p className="text-sm text-[var(--clay-500)]">Help others in the diaspora community</p>
                 </div>
-                <Badge className={profile.is_mentor ? "bg-accent-green text-white" : "bg-neutral-200 text-neutral-600"}>
+                <Badge className={profile.is_mentor ? "bg-[var(--terracotta)] text-white" : "bg-[var(--clay-200)] text-[var(--clay-600)]"}>
                   {profile.is_mentor ? "Active Mentor" : "Not Available"}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-medium">Seeking Mentorship</h3>
-                  <p className="text-sm text-text-muted">Looking for guidance and support</p>
+                  <p className="text-sm text-[var(--clay-500)]">Looking for guidance and support</p>
                 </div>
-                <Badge className={profile.is_seeking_mentorship ? "bg-blue-500 text-white" : "bg-neutral-200 text-neutral-600"}>
+                <Badge className={profile.is_seeking_mentorship ? "bg-[var(--indigo)] text-white" : "bg-[var(--clay-200)] text-[var(--clay-600)]"}>
                   {profile.is_seeking_mentorship ? "Seeking" : "Not Seeking"}
                 </Badge>
               </div>
@@ -661,20 +661,20 @@ export default function ProfilePage() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div>
-                  <div className="text-2xl font-bold text-accent-green">156</div>
-                  <div className="text-sm text-text-muted">Connections</div>
+                  <div className="text-2xl font-bold text-[var(--terracotta)]">156</div>
+                  <div className="text-sm text-[var(--clay-500)]">Connections</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-blue-600">23</div>
-                  <div className="text-sm text-text-muted">Posts</div>
+                  <div className="text-2xl font-bold text-[var(--terracotta)]">23</div>
+                  <div className="text-sm text-[var(--clay-500)]">Posts</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-purple-600">8</div>
-                  <div className="text-sm text-text-muted">Events Attended</div>
+                  <div className="text-sm text-[var(--clay-500)]">Events Attended</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-orange-600">12</div>
-                  <div className="text-sm text-text-muted">Months Active</div>
+                  <div className="text-sm text-[var(--clay-500)]">Months Active</div>
                 </div>
               </div>
             </CardContent>
@@ -735,14 +735,14 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div className="p-4 rounded-lg bg-heritage-green/10">
-                  <Users className="h-6 w-6 mx-auto mb-2 text-heritage-green" />
-                  <div className="text-2xl font-bold text-heritage-green">{profile.connectionCount || 0}</div>
+                <div className="p-4 rounded-lg bg-[var(--terracotta)]/10">
+                  <Users className="h-6 w-6 mx-auto mb-2 text-[var(--terracotta)]" />
+                  <div className="text-2xl font-bold text-[var(--terracotta)]">{profile.connectionCount || 0}</div>
                   <div className="text-sm text-muted-foreground">Connections</div>
                 </div>
                 <div className="p-4 rounded-lg bg-blue-50">
-                  <MessageCircle className="h-6 w-6 mx-auto mb-2 text-blue-600" />
-                  <div className="text-2xl font-bold text-blue-600">{profile.postsCount || 0}</div>
+                  <MessageCircle className="h-6 w-6 mx-auto mb-2 text-[var(--terracotta)]" />
+                  <div className="text-2xl font-bold text-[var(--terracotta)]">{profile.postsCount || 0}</div>
                   <div className="text-sm text-muted-foreground">Posts</div>
                 </div>
                 <div className="p-4 rounded-lg bg-purple-50">

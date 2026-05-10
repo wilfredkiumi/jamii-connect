@@ -317,12 +317,12 @@ export default function JobsPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-neutral-200 rounded w-1/3"></div>
+          <div className="h-8 bg-[var(--clay-200)] rounded w-1/3"></div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="h-96 bg-neutral-200 rounded"></div>
+            <div className="h-96 bg-[var(--clay-200)] rounded"></div>
             <div className="lg:col-span-2 space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-48 bg-neutral-200 rounded"></div>
+                <div key={i} className="h-48 bg-[var(--clay-200)] rounded"></div>
               ))}
             </div>
           </div>
@@ -335,7 +335,7 @@ export default function JobsPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="text-center space-y-4 mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+        <h1 className="text-display text-3xl md:text-4xl font-bold text-foreground">
           Diaspora Job Board
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -347,7 +347,7 @@ export default function JobsPage() {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center justify-center space-x-2">
-                <Briefcase className="h-5 w-5 text-heritage-green" />
+                <Briefcase className="h-5 w-5 text-[var(--terracotta)]" />
                 <div className="text-left">
                   <p className="text-2xl font-bold">{jobs.length}</p>
                   <p className="text-xs text-muted-foreground">Active Jobs</p>
@@ -358,7 +358,7 @@ export default function JobsPage() {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center justify-center space-x-2">
-                <MapPin className="h-5 w-5 text-heritage-red" />
+                <MapPin className="h-5 w-5 text-[var(--gold)]" />
                 <div className="text-left">
                   <p className="text-2xl font-bold">{countries.length}</p>
                   <p className="text-xs text-muted-foreground">Countries</p>
@@ -369,7 +369,7 @@ export default function JobsPage() {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center justify-center space-x-2">
-                <Building2 className="h-5 w-5 text-blue-600" />
+                <Building2 className="h-5 w-5 text-[var(--terracotta)]" />
                 <div className="text-left">
                   <p className="text-2xl font-bold">{new Set(jobs.map(j => j.company)).size}</p>
                   <p className="text-xs text-muted-foreground">Companies</p>
@@ -531,7 +531,7 @@ export default function JobsPage() {
               </div>
 
               {/* Post Job Button */}
-              <Button asChild className="w-full bg-heritage-green hover:bg-green-700 text-white">
+              <Button asChild className="w-full bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)] text-white">
                 <Link href="/jobs/post">
                   <Plus className="h-4 w-4 mr-2" />
                   Post a Job
@@ -574,7 +574,7 @@ export default function JobsPage() {
                   <JobCard job={job} />
                   {job.is_diaspora_friendly && (
                     <div className="flex items-center gap-2 mt-2 ml-4">
-                      <Badge variant="secondary" className="bg-heritage-green/10 text-heritage-green border-heritage-green/20">
+                      <Badge variant="secondary" className="bg-[var(--terracotta)]/10 text-[var(--terracotta)] border-[var(--terracotta)]/20">
                         🌍 Diaspora Friendly
                       </Badge>
                       {job.visa_sponsorship && (

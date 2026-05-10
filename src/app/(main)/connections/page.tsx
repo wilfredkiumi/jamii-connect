@@ -230,9 +230,9 @@ export default function ConnectionsPage() {
       <CardContent className="p-4">
         <div className="flex items-start space-x-3">
           <div className="relative">
-            <Avatar className="h-12 w-12 border-2 border-heritage-green/20">
+            <Avatar className="h-12 w-12 border-2 border-[var(--terracotta)]/20">
               <AvatarImage src={user.profileImage} alt={`${user.firstName} ${user.lastName}`} />
-              <AvatarFallback className="bg-heritage-green/10 text-heritage-green">
+              <AvatarFallback className="bg-[var(--terracotta)]/10 text-[var(--terracotta)]">
                 {user.firstName[0]}{user.lastName[0]}
               </AvatarFallback>
             </Avatar>
@@ -247,7 +247,7 @@ export default function ConnectionsPage() {
                 {user.firstName} {user.lastName}
               </h3>
               {user.verified && (
-                <Badge variant="secondary" className="bg-heritage-green/10 text-heritage-green border-heritage-green/20">
+                <Badge variant="secondary" className="bg-[var(--terracotta)]/10 text-[var(--terracotta)] border-[var(--terracotta)]/20">
                   Verified
                 </Badge>
               )}
@@ -275,7 +275,7 @@ export default function ConnectionsPage() {
             )}
             
             {user.mutualConnections && user.mutualConnections > 0 && (
-              <div className="flex items-center space-x-1 text-sm text-heritage-green mt-2">
+              <div className="flex items-center space-x-1 text-sm text-[var(--terracotta)] mt-2">
                 <Users className="h-3 w-3" />
                 <span>{user.mutualConnections} mutual connections</span>
               </div>
@@ -286,7 +286,7 @@ export default function ConnectionsPage() {
                 {showConnectButton && (
                   <Button 
                     size="sm" 
-                    className="bg-heritage-green hover:bg-green-700"
+                    className="bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)]"
                     onClick={() => handleConnect(user.id)}
                     disabled={user.connectionStatus === 'pending'}
                   >
@@ -307,7 +307,7 @@ export default function ConnectionsPage() {
                 {showAcceptButton && (
                   <Button 
                     size="sm" 
-                    className="bg-heritage-green hover:bg-green-700"
+                    className="bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)]"
                     onClick={() => handleAcceptRequest(user.id)}
                   >
                     <UserCheck className="h-3 w-3 mr-1" />
@@ -354,7 +354,7 @@ export default function ConnectionsPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="text-center space-y-4 mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+        <h1 className="text-display text-3xl md:text-4xl font-bold text-foreground">
           Your Network
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -366,7 +366,7 @@ export default function ConnectionsPage() {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center justify-center space-x-2">
-                <Users className="h-5 w-5 text-heritage-green" />
+                <Users className="h-5 w-5 text-[var(--terracotta)]" />
                 <div className="text-left">
                   <p className="text-2xl font-bold">{connections.length}</p>
                   <p className="text-xs text-muted-foreground">Connections</p>
@@ -377,7 +377,7 @@ export default function ConnectionsPage() {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center justify-center space-x-2">
-                <UserPlus className="h-5 w-5 text-blue-600" />
+                <UserPlus className="h-5 w-5 text-[var(--terracotta)]" />
                 <div className="text-left">
                   <p className="text-2xl font-bold">{pendingRequests.length}</p>
                   <p className="text-xs text-muted-foreground">Pending</p>
@@ -388,7 +388,7 @@ export default function ConnectionsPage() {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center justify-center space-x-2">
-                <Star className="h-5 w-5 text-heritage-red" />
+                <Star className="h-5 w-5 text-[var(--gold)]" />
                 <div className="text-left">
                   <p className="text-2xl font-bold">{suggestions.length}</p>
                   <p className="text-xs text-muted-foreground">Suggestions</p>
@@ -470,7 +470,7 @@ export default function ConnectionsPage() {
                 <p className="text-muted-foreground mb-4">
                   Start building your network by connecting with fellow Kenyans
                 </p>
-                <Button className="bg-heritage-green hover:bg-green-700">
+                <Button className="bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)]">
                   Find People to Connect
                 </Button>
               </CardContent>

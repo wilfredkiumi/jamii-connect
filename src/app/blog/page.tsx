@@ -8,7 +8,7 @@ import { blogPosts } from '@/lib/blog-posts';
 export default function BlogPage() {
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8 text-center">Our Blogs & Stories</h1>
+      <h1 className="text-display text-4xl font-bold text-[var(--clay)] dark:text-[var(--clay-50)] mb-8 text-center">Our Blogs & Stories</h1>
 
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         {blogPosts.map((post) => (
@@ -24,14 +24,14 @@ export default function BlogPage() {
                 />
               </div>
               <CardContent className="p-6">
-                <Badge variant="secondary" className="mb-2 bg-blue-100 text-blue-600">{post.category}</Badge>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+                <Badge variant="secondary" className="mb-2 bg-blue-100 text-[var(--terracotta)]">{post.category}</Badge>
+                <h2 className="text-xl font-semibold text-[var(--clay)] dark:text-[var(--clay-50)] mb-2 hover:text-[var(--terracotta-light)] dark:hover:text-blue-300 transition-colors">
                   {post.title}
                 </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <p className="text-sm text-[var(--clay-600)] dark:text-[var(--clay-400)] mb-4">
                   By {post.author} on {post.date}
                 </p>
-                <p className="text-gray-700 dark:text-gray-300 text-sm line-clamp-3">
+                <p className="text-[var(--clay-600)] dark:text-[var(--clay-300)] text-sm line-clamp-3">
                   {/* Display a snippet of the content */}
                   {post.content.substring(0, 150)}...
                 </p>

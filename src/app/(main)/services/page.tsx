@@ -321,12 +321,12 @@ export default function ServicesPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-neutral-200 rounded w-1/3"></div>
+          <div className="h-8 bg-[var(--clay-200)] rounded w-1/3"></div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="h-96 bg-neutral-200 rounded"></div>
+            <div className="h-96 bg-[var(--clay-200)] rounded"></div>
             <div className="lg:col-span-2 space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-48 bg-neutral-200 rounded"></div>
+                <div key={i} className="h-48 bg-[var(--clay-200)] rounded"></div>
               ))}
             </div>
           </div>
@@ -339,10 +339,10 @@ export default function ServicesPage() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="text-center space-y-4 mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-text-primary">
+        <h1 className="text-display text-3xl md:text-4xl font-bold text-[var(--clay)]">
           Diaspora Services Directory
         </h1>
-        <p className="text-text-secondary text-lg max-w-2xl mx-auto">
+        <p className="text-[var(--clay-600)] text-lg max-w-2xl mx-auto">
           Discover professional services offered by talented members of the African and Caribbean diaspora community worldwide.
         </p>
       </div>
@@ -369,7 +369,7 @@ export default function ServicesPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Search</label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--clay-500)] h-4 w-4" />
                   <Input
                     placeholder="Service name or description..."
                     className="pl-10"
@@ -424,16 +424,16 @@ export default function ServicesPage() {
                   id="verified-only"
                   checked={verifiedOnly}
                   onChange={(e) => setVerifiedOnly(e.target.checked)}
-                  className="rounded border-neutral-300"
+                  className="rounded border-[var(--clay-300)]"
                 />
                 <label htmlFor="verified-only" className="text-sm font-medium flex items-center">
-                  <Verified className="h-4 w-4 mr-1 text-heritage-green" />
+                  <Verified className="h-4 w-4 mr-1 text-[var(--terracotta)]" />
                   Verified Services Only
                 </label>
               </div>
 
               {/* Add Service Button */}
-              <Button asChild className="w-full bg-accent-green hover:bg-green-700 text-white">
+              <Button asChild className="w-full bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)] text-white">
                 <Link href="/services/add">
                   <Plus className="h-4 w-4 mr-2" />
                   List Your Service
@@ -447,10 +447,10 @@ export default function ServicesPage() {
         <div className="lg:col-span-3">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-text-primary">
+              <h2 className="text-xl font-semibold text-[var(--clay)]">
                 {filteredServices.length} Services Found
               </h2>
-              <p className="text-text-muted text-sm">
+              <p className="text-[var(--clay-500)] text-sm">
                 Professional services by diaspora community members
               </p>
             </div>
@@ -463,35 +463,35 @@ export default function ServicesPage() {
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-4 flex-1">
-                        <Avatar className="h-12 w-12 border-2 border-neutral-200">
+                        <Avatar className="h-12 w-12 border-2 border-[var(--clay-200)]">
                           <AvatarImage src={service.provider.avatar_url} alt={service.provider.full_name} />
-                          <AvatarFallback className="bg-neutral-100 text-text-primary">
+                          <AvatarFallback className="bg-[var(--clay-100)] text-[var(--clay)]">
                             {service.provider.full_name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-2">
-                            <h3 className="text-lg font-semibold text-text-primary">
+                            <h3 className="text-lg font-semibold text-[var(--clay)]">
                               {service.service_name}
                             </h3>
                             {service.is_verified && (
-                              <Verified className="h-5 w-5 text-heritage-green" />
+                              <Verified className="h-5 w-5 text-[var(--terracotta)]" />
                             )}
                           </div>
                           
                           <div className="flex items-center space-x-2 mb-2">
-                            <span className="text-text-secondary font-medium">
+                            <span className="text-[var(--clay-600)] font-medium">
                               by {service.provider.full_name}
                             </span>
-                            <span className="text-text-muted">•</span>
-                            <span className="text-text-muted">{service.provider.profession}</span>
+                            <span className="text-[var(--clay-500)]">•</span>
+                            <span className="text-[var(--clay-500)]">{service.provider.profession}</span>
                           </div>
 
                           <div className="flex items-center space-x-4 mb-3">
                             <Badge variant="secondary">{service.category}</Badge>
                             {service.country && (
-                              <div className="flex items-center space-x-1 text-text-muted text-sm">
+                              <div className="flex items-center space-x-1 text-[var(--clay-500)] text-sm">
                                 <span>{getCountryFlag(service.country)}</span>
                                 <MapPin className="h-4 w-4" />
                                 <span>{service.location}, {service.country}</span>
@@ -505,19 +505,19 @@ export default function ServicesPage() {
                                 {renderStars(service.rating)}
                               </div>
                               <span className="text-sm font-medium">{service.rating}</span>
-                              <span className="text-sm text-text-muted">
+                              <span className="text-sm text-[var(--clay-500)]">
                                 ({service.reviews_count} reviews)
                               </span>
                             </div>
                           )}
 
-                          <p className="text-text-secondary text-sm mb-4 line-clamp-2">
+                          <p className="text-[var(--clay-600)] text-sm mb-4 line-clamp-2">
                             {service.description}
                           </p>
 
                           {service.provider.heritage_countries && service.provider.heritage_countries.length > 0 && (
                             <div className="flex items-center space-x-2 mb-4">
-                              <span className="text-xs text-text-muted">Heritage:</span>
+                              <span className="text-xs text-[var(--clay-500)]">Heritage:</span>
                               {service.provider.heritage_countries.map((country, index) => (
                                 <span key={index} className="text-xs">
                                   {getCountryFlag(country)} {country}
@@ -530,7 +530,7 @@ export default function ServicesPage() {
                             {service.contact_phone && (
                               <a
                                 href={`tel:${service.contact_phone}`}
-                                className="flex items-center space-x-1 text-heritage-green hover:underline"
+                                className="flex items-center space-x-1 text-[var(--terracotta)] hover:underline"
                               >
                                 <Phone className="h-4 w-4" />
                                 <span>Call</span>
@@ -539,7 +539,7 @@ export default function ServicesPage() {
                             {service.contact_email && (
                               <a
                                 href={`mailto:${service.contact_email}`}
-                                className="flex items-center space-x-1 text-heritage-green hover:underline"
+                                className="flex items-center space-x-1 text-[var(--terracotta)] hover:underline"
                               >
                                 <Mail className="h-4 w-4" />
                                 <span>Email</span>
@@ -550,7 +550,7 @@ export default function ServicesPage() {
                                 href={service.website}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center space-x-1 text-heritage-green hover:underline"
+                                className="flex items-center space-x-1 text-[var(--terracotta)] hover:underline"
                               >
                                 <ExternalLink className="h-4 w-4" />
                                 <span>Website</span>
@@ -566,11 +566,11 @@ export default function ServicesPage() {
             ) : (
               <Card className="text-center py-12">
                 <CardContent>
-                  <Users className="h-12 w-12 text-text-muted mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-text-primary mb-2">
+                  <Users className="h-12 w-12 text-[var(--clay-500)] mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-[var(--clay)] mb-2">
                     No services found
                   </h3>
-                  <p className="text-text-muted mb-4">
+                  <p className="text-[var(--clay-500)] mb-4">
                     Try adjusting your filters or search terms
                   </p>
                   <Button variant="outline" onClick={() => {

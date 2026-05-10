@@ -236,7 +236,7 @@ We're looking for someone who shares our vision of financial inclusion across Af
       'freelance': 'bg-orange-100 text-orange-800',
       'internship': 'bg-yellow-100 text-yellow-800',
     }
-    return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+    return colors[type as keyof typeof colors] || 'bg-[var(--clay-100)] text-[var(--clay-800)]'
   }
 
   const getWorkTypeColor = (type: string) => {
@@ -245,7 +245,7 @@ We're looking for someone who shares our vision of financial inclusion across Af
       'hybrid': 'bg-indigo-100 text-indigo-800',
       'on-site': 'bg-slate-100 text-slate-800',
     }
-    return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+    return colors[type as keyof typeof colors] || 'bg-[var(--clay-100)] text-[var(--clay-800)]'
   }
 
   const getExperienceLevel = (level: string) => {
@@ -272,8 +272,8 @@ We're looking for someone who shares our vision of financial inclusion across Af
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-neutral-200 rounded w-1/3"></div>
-          <div className="h-96 bg-neutral-200 rounded"></div>
+          <div className="h-8 bg-[var(--clay-200)] rounded w-1/3"></div>
+          <div className="h-96 bg-[var(--clay-200)] rounded"></div>
         </div>
       </div>
     )
@@ -282,8 +282,8 @@ We're looking for someone who shares our vision of financial inclusion across Af
   if (!job) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold text-text-primary mb-4">Job not found</h1>
-        <p className="text-text-muted mb-6">The job you're looking for doesn't exist or has been removed.</p>
+        <h1 className="text-display text-2xl font-bold text-[var(--clay)] mb-4">Job not found</h1>
+        <p className="text-[var(--clay-500)] mb-6">The job you're looking for doesn't exist or has been removed.</p>
         <Button asChild>
           <Link href="/jobs">Browse All Jobs</Link>
         </Button>
@@ -308,7 +308,7 @@ We're looking for someone who shares our vision of financial inclusion across Af
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-4 flex-1">
                   {job.company_logo && (
-                    <div className="w-16 h-16 relative rounded-lg overflow-hidden border border-neutral-200">
+                    <div className="w-16 h-16 relative rounded-lg overflow-hidden border border-[var(--clay-200)]">
                       <Image
                         src={job.company_logo}
                         alt={`${job.company} logo`}
@@ -318,21 +318,21 @@ We're looking for someone who shares our vision of financial inclusion across Af
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h1 className="text-2xl font-bold text-text-primary mb-2">{job.title}</h1>
+                    <h1 className="text-display text-2xl font-bold text-[var(--clay)] mb-2">{job.title}</h1>
                     <div className="flex items-center space-x-2 mb-2">
-                      <Building2 className="h-5 w-5 text-text-muted" />
-                      <span className="text-lg font-medium text-text-secondary">{job.company}</span>
+                      <Building2 className="h-5 w-5 text-[var(--clay-500)]" />
+                      <span className="text-lg font-medium text-[var(--clay-600)]">{job.company}</span>
                       {job.company_size && (
                         <>
-                          <span className="text-text-muted">•</span>
-                          <span className="text-text-muted">{job.company_size}</span>
+                          <span className="text-[var(--clay-500)]">•</span>
+                          <span className="text-[var(--clay-500)]">{job.company_size}</span>
                         </>
                       )}
                     </div>
                     <div className="flex items-center space-x-2 mb-4">
                       <span>{getCountryFlag(job.country)}</span>
-                      <MapPin className="h-4 w-4 text-text-muted" />
-                      <span className="text-text-muted">{job.location}, {job.country}</span>
+                      <MapPin className="h-4 w-4 text-[var(--clay-500)]" />
+                      <span className="text-[var(--clay-500)]">{job.location}, {job.country}</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Badge className={getJobTypeColor(job.job_type)}>
@@ -345,7 +345,7 @@ We're looking for someone who shares our vision of financial inclusion across Af
                         {getExperienceLevel(job.experience_level)}
                       </Badge>
                       {job.is_diaspora_friendly && (
-                        <Badge className="bg-accent-green text-white">
+                        <Badge className="bg-[var(--terracotta)] text-white">
                           Diaspora Friendly
                         </Badge>
                       )}
@@ -364,7 +364,7 @@ We're looking for someone who shares our vision of financial inclusion across Af
             <CardContent>
               <div className="prose prose-neutral max-w-none">
                 {job.description.split('\n').map((paragraph, index) => (
-                  <p key={index} className="mb-4 text-text-secondary whitespace-pre-wrap">
+                  <p key={index} className="mb-4 text-[var(--clay-600)] whitespace-pre-wrap">
                     {paragraph}
                   </p>
                 ))}
@@ -381,8 +381,8 @@ We're looking for someone who shares our vision of financial inclusion across Af
               <ul className="space-y-2">
                 {job.requirements.map((requirement, index) => (
                   <li key={index} className="flex items-start space-x-2">
-                    <CheckCircle className="h-5 w-5 text-accent-green mt-0.5 flex-shrink-0" />
-                    <span className="text-text-secondary">{requirement}</span>
+                    <CheckCircle className="h-5 w-5 text-[var(--terracotta)] mt-0.5 flex-shrink-0" />
+                    <span className="text-[var(--clay-600)]">{requirement}</span>
                   </li>
                 ))}
               </ul>
@@ -399,8 +399,8 @@ We're looking for someone who shares our vision of financial inclusion across Af
                 <ul className="space-y-2">
                   {job.benefits.map((benefit, index) => (
                     <li key={index} className="flex items-start space-x-2">
-                      <CheckCircle className="h-5 w-5 text-accent-green mt-0.5 flex-shrink-0" />
-                      <span className="text-text-secondary">{benefit}</span>
+                      <CheckCircle className="h-5 w-5 text-[var(--terracotta)] mt-0.5 flex-shrink-0" />
+                      <span className="text-[var(--clay-600)]">{benefit}</span>
                     </li>
                   ))}
                 </ul>
@@ -435,19 +435,19 @@ We're looking for someone who shares our vision of financial inclusion across Af
             <CardContent className="space-y-4">
               {formatSalary() && (
                 <div className="flex items-center space-x-2">
-                  <DollarSign className="h-5 w-5 text-text-muted" />
-                  <span className="font-medium text-text-primary">{formatSalary()}</span>
+                  <DollarSign className="h-5 w-5 text-[var(--clay-500)]" />
+                  <span className="font-medium text-[var(--clay)]">{formatSalary()}</span>
                 </div>
               )}
               
               <div className="flex items-center space-x-2">
-                <Users className="h-5 w-5 text-text-muted" />
-                <span className="text-text-secondary">{job.applications_count} applicants</span>
+                <Users className="h-5 w-5 text-[var(--clay-500)]" />
+                <span className="text-[var(--clay-600)]">{job.applications_count} applicants</span>
               </div>
 
               <div className="flex items-center space-x-2">
-                <Clock className="h-5 w-5 text-text-muted" />
-                <span className="text-text-secondary">
+                <Clock className="h-5 w-5 text-[var(--clay-500)]" />
+                <span className="text-[var(--clay-600)]">
                   Posted {formatDistanceToNow(new Date(job.posted_at), { addSuffix: true })}
                 </span>
               </div>
@@ -472,7 +472,7 @@ We're looking for someone who shares our vision of financial inclusion across Af
                 ) : (
                   <Button 
                     onClick={handleApply}
-                    className="w-full bg-accent-green hover:bg-green-700 text-white"
+                    className="w-full bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)] text-white"
                   >
                     Apply Now
                   </Button>
@@ -516,9 +516,9 @@ We're looking for someone who shares our vision of financial inclusion across Af
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-medium text-text-primary">{job.poster.full_name}</h3>
+                  <h3 className="font-medium text-[var(--clay)]">{job.poster.full_name}</h3>
                   {job.poster.profession && (
-                    <p className="text-sm text-text-muted">{job.poster.profession}</p>
+                    <p className="text-sm text-[var(--clay-500)]">{job.poster.profession}</p>
                   )}
                 </div>
               </div>
@@ -534,18 +534,18 @@ We're looking for someone who shares our vision of financial inclusion across Af
               {job.industry && (
                 <div>
                   <span className="text-sm font-medium">Industry:</span>
-                  <span className="text-sm text-text-muted ml-2">{job.industry}</span>
+                  <span className="text-sm text-[var(--clay-500)] ml-2">{job.industry}</span>
                 </div>
               )}
               {job.company_size && (
                 <div>
                   <span className="text-sm font-medium">Company Size:</span>
-                  <span className="text-sm text-text-muted ml-2">{job.company_size}</span>
+                  <span className="text-sm text-[var(--clay-500)] ml-2">{job.company_size}</span>
                 </div>
               )}
               <div>
                 <span className="text-sm font-medium">Location:</span>
-                <span className="text-sm text-text-muted ml-2">{job.location}, {job.country}</span>
+                <span className="text-sm text-[var(--clay-500)] ml-2">{job.location}, {job.country}</span>
               </div>
             </CardContent>
           </Card>
@@ -562,13 +562,13 @@ We're looking for someone who shares our vision of financial inclusion across Af
             </DialogDescription>
           </DialogHeader>
           <div className="p-4">
-            <p className="text-text-muted">Job application form will be implemented here.</p>
+            <p className="text-[var(--clay-500)]">Job application form will be implemented here.</p>
             <div className="flex justify-end space-x-2 mt-4">
               <Button variant="outline" onClick={() => setShowApplicationForm(false)}>
                 Cancel
               </Button>
               <Button
-                className="bg-accent-green hover:bg-green-700 text-white"
+                className="bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)] text-white"
                 onClick={() => {
                   setShowApplicationForm(false)
                   setHasApplied(true)

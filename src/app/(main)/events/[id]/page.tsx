@@ -194,7 +194,7 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
   }
 
   const getEventStatus = () => {
-    if (!event) return { status: 'unknown', color: 'bg-gray-100 text-gray-800' }
+    if (!event) return { status: 'unknown', color: 'bg-[var(--clay-100)] text-[var(--clay-800)]' }
     
     const now = new Date()
     const startDate = new Date(event.start_date)
@@ -203,7 +203,7 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
     if (isBefore(now, startDate)) {
       return { status: 'upcoming', color: 'bg-green-100 text-green-800' }
     } else if (isAfter(now, endDate)) {
-      return { status: 'past', color: 'bg-gray-100 text-gray-800' }
+      return { status: 'past', color: 'bg-[var(--clay-100)] text-[var(--clay-800)]' }
     } else {
       return { status: 'ongoing', color: 'bg-red-100 text-red-800' }
     }
@@ -218,7 +218,7 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
       'business': 'bg-indigo-100 text-indigo-800',
       'social': 'bg-pink-100 text-pink-800',
     }
-    return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+    return colors[type as keyof typeof colors] || 'bg-[var(--clay-100)] text-[var(--clay-800)]'
   }
 
   const getCountryFlag = (country: string) => {
@@ -235,8 +235,8 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-neutral-200 rounded w-1/3"></div>
-          <div className="h-96 bg-neutral-200 rounded"></div>
+          <div className="h-8 bg-[var(--clay-200)] rounded w-1/3"></div>
+          <div className="h-96 bg-[var(--clay-200)] rounded"></div>
         </div>
       </div>
     )
@@ -245,8 +245,8 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
   if (!event) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold text-text-primary mb-4">Event not found</h1>
-        <p className="text-text-muted mb-6">The event you're looking for doesn't exist or has been removed.</p>
+        <h1 className="text-display text-2xl font-bold text-[var(--clay)] mb-4">Event not found</h1>
+        <p className="text-[var(--clay-500)] mb-6">The event you're looking for doesn't exist or has been removed.</p>
         <Button asChild>
           <Link href="/events">Browse All Events</Link>
         </Button>
@@ -293,7 +293,7 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
             )}
             <CardHeader>
               <div className="space-y-4">
-                <h1 className="text-3xl font-bold text-text-primary">{event.title}</h1>
+                <h1 className="text-display text-3xl font-bold text-[var(--clay)]">{event.title}</h1>
                 
                 <div className="flex flex-wrap gap-2">
                   <Badge className={getEventTypeColor(event.event_type)}>
@@ -307,7 +307,7 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
                   )}
                 </div>
 
-                <div className="space-y-2 text-text-muted">
+                <div className="space-y-2 text-[var(--clay-500)]">
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-5 w-5" />
                     <span className="font-medium">
@@ -354,7 +354,7 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
             <CardContent>
               <div className="prose prose-neutral max-w-none">
                 {event.description.split('\n').map((paragraph, index) => (
-                  <p key={index} className="mb-4 text-text-secondary whitespace-pre-wrap">
+                  <p key={index} className="mb-4 text-[var(--clay-600)] whitespace-pre-wrap">
                     {paragraph}
                   </p>
                 ))}
@@ -374,7 +374,7 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
                     <Link
                       key={index}
                       href={`/events?tag=${encodeURIComponent(tag)}`}
-                      className="inline-block px-3 py-1 bg-neutral-100 hover:bg-neutral-200 text-text-secondary text-sm rounded-full transition-colors"
+                      className="inline-block px-3 py-1 bg-[var(--clay-100)] hover:bg-[var(--clay-200)] text-[var(--clay-600)] text-sm rounded-full transition-colors"
                     >
                       #{tag}
                     </Link>
@@ -394,11 +394,11 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="text-center">
-                <div className="text-3xl font-bold text-accent-green mb-1">
+                <div className="text-3xl font-bold text-[var(--terracotta)] mb-1">
                   {formatPrice()}
                 </div>
                 {!event.is_free && (
-                  <p className="text-sm text-text-muted">per person</p>
+                  <p className="text-sm text-[var(--clay-500)]">per person</p>
                 )}
               </div>
 
@@ -406,15 +406,15 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-text-muted">Date:</span>
+                  <span className="text-[var(--clay-500)]">Date:</span>
                   <span className="font-medium">{format(new Date(event.start_date), 'MMM dd, yyyy')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-muted">Time:</span>
+                  <span className="text-[var(--clay-500)]">Time:</span>
                   <span className="font-medium">{format(new Date(event.start_date), 'h:mm a')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-muted">Attendees:</span>
+                  <span className="text-[var(--clay-500)]">Attendees:</span>
                   <span className="font-medium">{attendeesCount}</span>
                 </div>
               </div>
@@ -425,7 +425,7 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
                 {canRSVP ? (
                   <Button 
                     onClick={handleRegister}
-                    className="w-full bg-accent-green hover:bg-green-700 text-white"
+                    className="w-full bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)] text-white"
                   >
                     {event.registration_url ? 'Register Now' : (isAttending ? 'Going' : 'RSVP')}
                   </Button>
@@ -473,9 +473,9 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-medium text-text-primary">{event.organizer.name}</h3>
+                  <h3 className="font-medium text-[var(--clay)]">{event.organizer.name}</h3>
                   {event.organizer.organization && (
-                    <p className="text-sm text-text-muted">{event.organizer.organization}</p>
+                    <p className="text-sm text-[var(--clay-500)]">{event.organizer.organization}</p>
                   )}
                 </div>
               </div>
@@ -489,21 +489,21 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-text-muted">Event Type:</span>
+                <span className="text-[var(--clay-500)]">Event Type:</span>
                 <span className="font-medium capitalize">{event.event_type}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text-muted">Format:</span>
+                <span className="text-[var(--clay-500)]">Format:</span>
                 <span className="font-medium">{event.is_virtual ? 'Virtual' : 'In-Person'}</span>
               </div>
               {event.max_attendees && (
                 <div className="flex justify-between">
-                  <span className="text-text-muted">Capacity:</span>
+                  <span className="text-[var(--clay-500)]">Capacity:</span>
                   <span className="font-medium">{event.max_attendees} people</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-text-muted">Created:</span>
+                <span className="text-[var(--clay-500)]">Created:</span>
                 <span className="font-medium">
                   {formatDistanceToNow(new Date(event.created_at), { addSuffix: true })}
                 </span>

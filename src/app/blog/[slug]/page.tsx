@@ -29,8 +29,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </Link>
       </div>
 
-      <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{post.title}</h1>
-      <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
+      <h1 className="text-display text-4xl font-bold text-[var(--clay)] dark:text-[var(--clay-50)] mb-4">{post.title}</h1>
+      <p className="text-[var(--clay-600)] dark:text-[var(--clay-400)] text-sm mb-6">
         By {post.author} on {post.date} - Category: {post.category}
       </p>
 

@@ -229,8 +229,8 @@ export default function PostJobPage() {
               Back to Jobs
             </Link>
           </Button>
-          <h1 className="text-3xl font-bold text-text-primary">Post a Job</h1>
-          <p className="text-text-secondary mt-2">
+          <h1 className="text-display text-3xl font-bold text-[var(--clay)]">Post a Job</h1>
+          <p className="text-[var(--clay-600)] mt-2">
             Connect with talented professionals in the African and Caribbean diaspora
           </p>
         </div>
@@ -617,7 +617,7 @@ export default function PostJobPage() {
           <Button 
             type="submit" 
             disabled={loading}
-            className="bg-accent-green hover:bg-green-700 text-white"
+            className="bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)] text-white"
           >
             {loading ? 'Posting...' : 'Post Job'}
           </Button>

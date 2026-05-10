@@ -125,23 +125,23 @@ export default function PostCard({ post, onLike, onBookmark, onShare }: PostCard
   }
 
   return (
-    <Card className="w-full border border-neutral-200 hover:border-neutral-300 transition-colors">
+    <Card className="w-full border border-[var(--clay-200)] hover:border-[var(--clay-300)] transition-colors">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-3">
             <Link href={`/profile/${post.author.id}`}>
-              <Avatar className="h-10 w-10 border-2 border-neutral-200 hover:border-accent-green transition-colors">
+              <Avatar className="h-10 w-10 border-2 border-[var(--clay-200)] hover:border-[var(--terracotta)] transition-colors">
                 <AvatarImage src={post.author.avatar_url} alt={post.author.full_name} />
-                <AvatarFallback className="bg-neutral-100 text-text-primary">
+                <AvatarFallback className="bg-[var(--clay-100)] text-[var(--clay)]">
                   {post.author.full_name.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
             </Link>
             <div>
               <Link href={`/profile/${post.author.id}`} className="hover:underline">
-                <h3 className="font-semibold text-text-primary">{post.author.full_name}</h3>
+                <h3 className="font-semibold text-[var(--clay)]">{post.author.full_name}</h3>
               </Link>
-              <div className="flex items-center space-x-2 text-sm text-text-muted">
+              <div className="flex items-center space-x-2 text-sm text-[var(--clay-500)]">
                 <span>{getCountryFlag(post.author.country || '')}</span>
                 <span>{getLocationDisplay()}</span>
                 <span>•</span>
@@ -171,7 +171,7 @@ export default function PostCard({ post, onLike, onBookmark, onShare }: PostCard
 
       <CardContent className="pb-3">
         <div className="space-y-3">
-          <p className="text-text-primary whitespace-pre-wrap">{post.content}</p>
+          <p className="text-[var(--clay)] whitespace-pre-wrap">{post.content}</p>
           
           {post.image_url && (
             <div className="relative w-full h-64 md:h-80 rounded-lg overflow-hidden">
@@ -190,7 +190,7 @@ export default function PostCard({ post, onLike, onBookmark, onShare }: PostCard
                 <Link
                   key={index}
                   href={`/search?tag=${encodeURIComponent(tag)}`}
-                  className="inline-block px-2 py-1 bg-neutral-100 hover:bg-neutral-200 text-text-secondary text-xs rounded-full transition-colors"
+                  className="inline-block px-2 py-1 bg-[var(--clay-100)] hover:bg-[var(--clay-200)] text-[var(--clay-600)] text-xs rounded-full transition-colors"
                 >
                   #{tag}
                 </Link>
@@ -200,7 +200,7 @@ export default function PostCard({ post, onLike, onBookmark, onShare }: PostCard
         </div>
       </CardContent>
 
-      <CardFooter className="pt-3 border-t border-neutral-100">
+      <CardFooter className="pt-3 border-t border-[var(--clay-100)]">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center space-x-4">
             <Button
@@ -208,7 +208,7 @@ export default function PostCard({ post, onLike, onBookmark, onShare }: PostCard
               size="sm"
               onClick={handleLike}
               className={`flex items-center space-x-2 ${
-                isLiked ? 'text-accent-red' : 'text-text-muted hover:text-accent-red'
+                isLiked ? 'text-red-500' : 'text-[var(--clay-500)] hover:text-red-500'
               }`}
             >
               <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
@@ -216,7 +216,7 @@ export default function PostCard({ post, onLike, onBookmark, onShare }: PostCard
             </Button>
 
             <Link href={`/posts/${post.id}`}>
-              <Button variant="ghost" size="sm" className="flex items-center space-x-2 text-text-muted hover:text-text-primary">
+              <Button variant="ghost" size="sm" className="flex items-center space-x-2 text-[var(--clay-500)] hover:text-[var(--clay)]">
                 <MessageCircle className="h-4 w-4" />
                 <span className="text-sm">{post.comments_count}</span>
               </Button>
@@ -226,7 +226,7 @@ export default function PostCard({ post, onLike, onBookmark, onShare }: PostCard
               variant="ghost"
               size="sm"
               onClick={handleShare}
-              className="flex items-center space-x-2 text-text-muted hover:text-text-primary"
+              className="flex items-center space-x-2 text-[var(--clay-500)] hover:text-[var(--clay)]"
             >
               <Share2 className="h-4 w-4" />
               <span className="text-sm">Share</span>
@@ -238,7 +238,7 @@ export default function PostCard({ post, onLike, onBookmark, onShare }: PostCard
             size="sm"
             onClick={handleBookmark}
             className={`${
-              isBookmarked ? 'text-accent-green' : 'text-text-muted hover:text-accent-green'
+              isBookmarked ? 'text-[var(--terracotta)]' : 'text-[var(--clay-500)] hover:text-[var(--terracotta)]'
             }`}
           >
             <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />

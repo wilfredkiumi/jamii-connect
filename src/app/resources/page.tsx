@@ -8,7 +8,7 @@ import { FileText, Download, ExternalLink, Lock } from 'lucide-react';
 export default function ResourcesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8 text-center">Community Resources & Templates</h1>
+      <h1 className="text-display text-4xl font-bold text-[var(--clay)] dark:text-[var(--clay-50)] mb-8 text-center">Community Resources & Templates</h1>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {resources.map((resource) => (
@@ -27,10 +27,10 @@ export default function ResourcesPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700 dark:text-gray-300 mb-4">{resource.description}</p>
-              <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-[var(--clay-600)] dark:text-[var(--clay-300)] mb-4">{resource.description}</p>
+              <div className="flex justify-between items-center text-sm text-[var(--clay-500)] dark:text-[var(--clay-400)]">
                 <span>Category: {resource.category}</span>
-                <Link href={resource.link} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 flex items-center">
+                <Link href={resource.link} className="text-[var(--terracotta)] hover:text-[var(--terracotta-light)] dark:text-[var(--terracotta-light)] dark:hover:text-[var(--clay-200)] flex items-center">
                     Access Resource <ExternalLink className="ml-1 h-4 w-4" />
                   </Link>
               </div>

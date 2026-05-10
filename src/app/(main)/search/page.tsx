@@ -206,7 +206,7 @@ function SearchPageContent() {
               <AvatarFallback>{result.author.name[0]}</AvatarFallback>
             </Avatar>
           ) : (
-            <div className="w-12 h-12 rounded-lg bg-heritage-green/10 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-lg bg-[var(--terracotta)]/10 flex items-center justify-center">
               {getTypeIcon(result.type)}
             </div>
           )}
@@ -217,7 +217,7 @@ function SearchPageContent() {
                 {result.type.charAt(0).toUpperCase() + result.type.slice(1)}
               </Badge>
               {result.metadata?.verified && (
-                <Badge variant="secondary" className="bg-heritage-green/10 text-heritage-green border-heritage-green/20 text-xs">
+                <Badge variant="secondary" className="bg-[var(--terracotta)]/10 text-[var(--terracotta)] border-[var(--terracotta)]/20 text-xs">
                   Verified
                 </Badge>
               )}
@@ -256,7 +256,7 @@ function SearchPageContent() {
               </div>
               
               <Link href={`/${result.type}s/${result.id}`}>
-                <Button size="sm" variant="ghost" className="text-heritage-green hover:text-green-700">
+                <Button size="sm" variant="ghost" className="text-[var(--terracotta)] hover:text-[var(--terracotta-light)]">
                   View
                 </Button>
               </Link>
@@ -271,7 +271,7 @@ function SearchPageContent() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="text-center space-y-4 mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+        <h1 className="text-display text-3xl md:text-4xl font-bold text-foreground">
           Search Results
         </h1>
         {initialQuery && (
@@ -299,7 +299,7 @@ function SearchPageContent() {
         </div>
         <Button 
           onClick={() => performSearch(searchQuery)}
-          className="bg-heritage-green hover:bg-green-700"
+          className="bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)]"
           disabled={loading}
         >
           {loading ? 'Searching...' : 'Search'}
