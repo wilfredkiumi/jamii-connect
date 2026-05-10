@@ -10,15 +10,11 @@ import { forumTopicsData, Topic, Post } from '@/lib/forum-topics-data';
 import { forumCategories } from '@/lib/forums-data';
 
 interface TopicPageProps {
-  params: {
-    categorySlug: string;
-    forumSlug: string;
-    topicSlug: string;
-  };
+  params: Promise<{ categorySlug: string; forumSlug: string; topicSlug: string }>;
 }
 
-export default function TopicPage({ params }: TopicPageProps) {
-  const { categorySlug, forumSlug, topicSlug } = params;
+export default async function TopicPage({ params }: TopicPageProps) {
+  const { categorySlug, forumSlug, topicSlug } = await params;
 
   const category = forumCategories.find((cat) => cat.slug === categorySlug);
   if (!category) {

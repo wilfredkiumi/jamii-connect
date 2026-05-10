@@ -8,14 +8,11 @@ import { forumTopicsData, Topic } from '@/lib/forum-topics-data';
 import { MessageCircle, Eye } from 'lucide-react';
 
 interface ForumPageProps {
-  params: {
-    categorySlug: string;
-    forumSlug: string;
-  };
+  params: Promise<{ categorySlug: string; forumSlug: string }>;
 }
 
-export default function ForumPage({ params }: ForumPageProps) {
-  const { categorySlug, forumSlug } = params;
+export default async function ForumPage({ params }: ForumPageProps) {
+  const { categorySlug, forumSlug } = await params;
 
   const category = forumCategories.find((cat) => cat.slug === categorySlug);
   if (!category) {
