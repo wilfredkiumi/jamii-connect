@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Playfair_Display } from "next/font/google";
+import { DM_Sans, Outfit } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AmplifyProvider } from "@/components/providers/amplify-provider";
@@ -12,7 +12,7 @@ const dmSans = DM_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
-const playfair = Playfair_Display({
+const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-display",
   weight: ["400", "500", "600", "700", "800"],
@@ -30,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${dmSans.variable} ${playfair.variable} antialiased min-h-screen bg-background`}>
+      <body className={`${dmSans.variable} ${outfit.variable} antialiased min-h-screen bg-background`}>
         <AmplifyProvider>
           <Header />
           <main className="flex-1">

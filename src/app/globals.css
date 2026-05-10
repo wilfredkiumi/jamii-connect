@@ -146,7 +146,7 @@
     font-family: var(--font-body), -apple-system, BlinkMacSystemFont, sans-serif;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display), serif;
+    font-family: var(--font-display), sans-serif;
     font-weight: 700;
     letter-spacing: -0.02em;
   }
@@ -155,14 +155,14 @@
 /* Typography rhythm */
 @layer utilities {
   .text-display {
-    font-family: var(--font-display), serif;
+    font-family: var(--font-display), sans-serif;
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1.1;
   }
 
   .text-editorial {
-    font-family: var(--font-display), serif;
+    font-family: var(--font-display), sans-serif;
     font-weight: 400;
     letter-spacing: -0.01em;
     line-height: 1.4;
