@@ -24,27 +24,27 @@ const ukCities = [
 
 const recentActivity = [
   {
-    type: 'job',
-    text: 'Senior Developer role at Monzo — visa sponsorship available',
-    time: '2h ago',
-    community: '🇳🇬',
+    type: 'connection',
+    text: 'Amina just connected with 3 Kenyans in Bristol — "feels like home already"',
+    time: '20m ago',
+    community: '🇰🇪',
   },
   {
     type: 'event',
-    text: 'Jollof & Nyama Choma Night — Manchester, 24 May',
-    time: '4h ago',
+    text: 'Jollof & Nyama Choma Night — Manchester, 24 May. 42 attending',
+    time: '1h ago',
     community: '🇬🇭🇰🇪',
   },
   {
-    type: 'service',
-    text: 'New immigration solicitor verified in Birmingham',
-    time: '6h ago',
-    community: '🇿🇼',
+    type: 'forum',
+    text: '"Best African hair salons in South London?" — 18 replies and counting',
+    time: '3h ago',
+    community: '🇳🇬',
   },
   {
-    type: 'connection',
-    text: '23 new members joined from London this week',
-    time: '1d ago',
+    type: 'welcome',
+    text: '23 new members joined from London this week. Say hello!',
+    time: '6h ago',
     community: '🌍',
   },
 ]
