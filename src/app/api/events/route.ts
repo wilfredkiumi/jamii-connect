@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   const events = await listEvents({
     limit: Number(searchParams.get('limit')) || 20,
     offset: Number(searchParams.get('offset')) || 0,
+    q: searchParams.get('q') || undefined,
     event_type: searchParams.get('event_type') || undefined,
     country: searchParams.get('country') || undefined,
     is_free: searchParams.get('is_free') === 'true' ? true : undefined,

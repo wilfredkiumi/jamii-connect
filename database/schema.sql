@@ -42,6 +42,7 @@ CREATE TABLE profiles (
   is_mentor BOOLEAN DEFAULT FALSE,
   is_seeking_mentorship BOOLEAN DEFAULT FALSE,
   is_verified BOOLEAN DEFAULT FALSE,
+  is_public_profile BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -165,6 +166,7 @@ CREATE TABLE services (
   provider_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   service_name TEXT NOT NULL,
   category TEXT NOT NULL,
+  country TEXT,
   description TEXT NOT NULL,
   contact_phone TEXT,
   contact_email TEXT,

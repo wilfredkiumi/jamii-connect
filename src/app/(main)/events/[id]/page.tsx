@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format, formatDistanceToNow, isAfter, isBefore } from 'date-fns'
-// import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -22,33 +21,10 @@ import {
   Video,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import type { EventWithOrganizer as Event } from '@/types/database'
+import { getEvent } from '@/lib/api/client'
 
-interface Event {
-  id: string
-  title: string
-  description: string
-  image_url?: string
-  start_date: string
-  end_date?: string
-  location?: string
-  country?: string
-  is_virtual: boolean
-  event_type: 'conference' | 'workshop' | 'networking' | 'cultural' | 'business' | 'social'
-  price?: number
-  currency: string
-  max_attendees?: number
-  current_attendees: number
-  is_free: boolean
-  registration_url?: string
-  tags: string[]
-  organizer: {
-    id: string
-    name: string
-    avatar_url?: string
-    organization?: string
-  }
-  created_at: string
-}
+const organizerName = (e: Event) => e.organizer.full_name ?? 'Community member'
 
 export default function EventDetailPage() {
   const params = useParams()
@@ -70,65 +46,20 @@ export default function EventDetailPage() {
   const loadEvent = async (eventId: string) => {
     try {
       setLoading(true)
-      
-      // Mock event data for now
-      const mockEvent: Event = {
-        id: eventId,
-        title: 'Caribbean Tech Summit 2024',
-        description: `Join us for the most anticipated tech event in the Caribbean! The Caribbean Tech Summit 2024 brings together the brightest minds in technology from across the region and diaspora.
+      const { data, error } = await getEvent<Event>(eventId)
 
-This three-day summit will feature:
-
-🎯 **Keynote Speakers**: Industry leaders from major tech companies
-🚀 **Startup Showcase**: Emerging Caribbean tech startups
-🤝 **Networking Sessions**: Connect with fellow professionals
-💡 **Workshops**: Hands-on sessions on latest technologies
-🌍 **Diaspora Panel**: Success stories from Caribbean tech professionals worldwide
-
-Whether you're a seasoned professional, entrepreneur, or just starting your tech journey, this summit offers something for everyone. Come be part of the movement that's putting Caribbean tech on the global map!
-
-**What's Included:**
-- All conference sessions and workshops
-- Welcome reception and networking dinner
-- Lunch and refreshments
-- Conference swag bag
-- Access to exclusive online community
-
-**Special Diaspora Track:**
-We&apos;re featuring a special track for diaspora professionals, including sessions on remote work, building global teams, and giving back to the Caribbean tech ecosystem.`,
-        image_url: '/api/placeholder/800/400',
-        start_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        end_date: new Date(Date.now() + 9 * 24 * 60 * 60 * 1000).toISOString(),
-        location: 'Kingston Convention Centre',
-        country: 'Jamaica',
-        is_virtual: false,
-        event_type: 'conference',
-        price: 150,
-        currency: 'USD',
-        max_attendees: 500,
-        current_attendees: 234,
-        is_free: false,
-        registration_url: 'https://caribbeantech.com/summit2024',
-        tags: ['tech', 'caribbean', 'networking', 'startups', 'diaspora'],
-        organizer: {
-          id: '1',
-          name: 'Caribbean Tech Alliance',
-          avatar_url: '',
-          organization: 'CTA',
-        },
-        created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      if (error || !data) {
+        throw error ?? new Error('Event not found')
       }
 
-      setEvent(mockEvent)
-      setAttendeesCount(mockEvent.current_attendees)
-      
-      // Check if user has bookmarked or is attending
+      setEvent(data)
+      setAttendeesCount(data.current_attendees)
       setIsBookmarked(false)
-      setIsAttending(false)
-      
+      setIsAttending(data.is_attending)
     } catch (error) {
       console.error('Error loading event:', error)
       toast.error('Failed to load event details')
+      setEvent(null)
     } finally {
       setLoading(false)
     }
@@ -246,7 +177,7 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <h1 className="text-display text-2xl font-bold text-[var(--clay)] mb-4">Event not found</h1>
-        <p className="text-[var(--clay-500)] mb-6">The event you're looking for doesn't exist or has been removed.</p>
+        <p className="text-[var(--clay-500)] mb-6">The event you&apos;re looking for doesn&apos;t exist or has been removed.</p>
         <Button asChild>
           <Link href="/events">Browse All Events</Link>
         </Button>
@@ -467,15 +398,15 @@ We&apos;re featuring a special track for diaspora professionals, including sessi
             <CardContent>
               <div className="flex items-center space-x-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={event.organizer.avatar_url} alt={event.organizer.name} />
+                  <AvatarImage src={event.organizer.avatar_url ?? undefined} alt={organizerName(event)} />
                   <AvatarFallback>
-                    {event.organizer.name.split(' ').map(n => n[0]).join('')}
+                    {organizerName(event).split(' ').map((n: string) => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-medium text-[var(--clay)]">{event.organizer.name}</h3>
-                  {event.organizer.organization && (
-                    <p className="text-sm text-[var(--clay-500)]">{event.organizer.organization}</p>
+                  <h3 className="font-medium text-[var(--clay)]">{organizerName(event)}</h3>
+                  {event.organizer.profession && (
+                    <p className="text-sm text-[var(--clay-500)]">{event.organizer.profession}</p>
                   )}
                 </div>
               </div>

@@ -1,38 +1,28 @@
 import { query, queryOne } from './index';
+import type { Job, JobWithPoster } from '@/types/database';
 
-export interface Job {
-  id: string;
-  posted_by: string;
-  title: string;
-  company: string;
-  company_logo: string | null;
-  location: string;
-  country: string;
-  job_type: 'full-time' | 'part-time' | 'contract' | 'freelance' | 'internship';
-  work_type: 'remote' | 'hybrid' | 'on-site';
-  salary_min: number | null;
-  salary_max: number | null;
-  currency: string;
-  description: string;
-  requirements: string[];
-  benefits: string[];
-  skills: string[];
-  experience_level: 'entry' | 'mid' | 'senior' | 'executive';
-  company_size: string | null;
-  industry: string | null;
-  application_url: string | null;
-  application_email: string | null;
-  is_diaspora_friendly: boolean;
-  visa_sponsorship: boolean;
-  is_active: boolean;
-  views_count: number;
-  applications_count: number;
-  created_at: string;
-  expires_at: string | null;
-}
+export type { Job, JobWithPoster };
 
-export async function getJob(id: string): Promise<Job | null> {
-  return queryOne<Job>('SELECT * FROM jobs WHERE id = $1', [id]);
+export async function getJob(id: string): Promise<JobWithPoster | null> {
+  return queryOne<JobWithPoster>(
+    `SELECT j.*,
+      json_build_object(
+        'id', pr.id,
+        'full_name', pr.full_name,
+        'avatar_url', pr.avatar_url,
+        'location', pr.location,
+        'country', pr.country,
+        'profession', pr.profession,
+        'company', pr.company,
+        'bio', pr.bio,
+        'heritage_countries', pr.heritage_countries,
+        'is_verified', pr.is_verified
+      ) AS poster
+     FROM jobs j
+     JOIN profiles pr ON j.posted_by = pr.id
+     WHERE j.id = $1`,
+    [id]
+  );
 }
 
 export async function listJobs(options?: {
@@ -45,6 +35,7 @@ export async function listJobs(options?: {
   is_diaspora_friendly?: boolean;
   visa_sponsorship?: boolean;
   is_active?: boolean;
+  q?: string;
 }): Promise<Job[]> {
   const conditions: string[] = [];
   const params: unknown[] = [];
@@ -80,6 +71,15 @@ export async function listJobs(options?: {
   } else {
     conditions.push(`is_active = $${i++}`);
     params.push(true);
+  }
+
+  if (options?.q) {
+    // One placeholder reused across columns. The value is parameterized, so
+    // this is injection-safe; note that `%` or `_` typed by the user still act
+    // as wildcards, which for a search box is acceptable behaviour.
+    conditions.push(`(title ILIKE $${i} OR company ILIKE $${i} OR description ILIKE $${i})`);
+    params.push(`%${options.q}%`);
+    i++;
   }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';

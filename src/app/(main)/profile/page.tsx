@@ -37,37 +37,15 @@ import {
   Shield,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { getUserProfile, updateUserProfile } from '@/lib/amplify/auth'
+import { getUserProfile, updateUserProfile } from '@/lib/api/client'
+import type { ProfileWithStats as Profile } from '@/types/database'
 
-interface Profile {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  profileImage?: string
-  bio?: string
-  location?: string
-  country?: string
-  heritageCountry?: string
-  profession?: string
-  company?: string
-  education?: string
-  skills?: string[]
-  languages?: string[]
-  interests?: string[]
-  linkedinUrl?: string
-  twitterUrl?: string
-  websiteUrl?: string
-  isMentor?: boolean
-  isSeekingMentorship?: boolean
-  isPublicProfile?: boolean
-  phoneNumber?: string
-  createdAt: string
-  verified?: boolean
-  connectionCount?: number
-  postsCount?: number
-  eventsAttended?: number
-}
+// The schema stores a single nullable full_name and a heritage_countries array;
+// the UI presents a display name and a primary heritage country.
+const displayName = (p: Profile) => p.full_name ?? 'Your profile'
+const initials = (p: Profile) =>
+  displayName(p).split(' ').map((n) => n[0]).slice(0, 2).join('')
+const heritage = (p: Profile) => p.heritage_countries?.[0] ?? null
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -84,79 +62,16 @@ export default function ProfilePage() {
   const loadProfile = async () => {
     try {
       setLoading(true)
-      const userProfile = await getUserProfile()
-      
-      if (!userProfile) {
+      const { data, error } = await getUserProfile<Profile>()
+
+      if (error || !data) {
         toast.error('Please log in to view your profile')
+        setProfile(null)
         return
       }
 
-      // If we have minimal data, use enhanced mock data for demo
-      if (!userProfile.bio) {
-        const mockProfile: Profile = {
-          id: userProfile.id,
-          firstName: userProfile.firstName || 'Grace',
-          lastName: userProfile.lastName || 'Wanjiku',
-          email: userProfile.email,
-          profileImage: userProfile.profileImage || '/avatars/grace.jpg',
-          bio: 'Software engineer passionate about building technology solutions that connect the Kenyan diaspora. Currently working on fintech products that help Kenyans abroad stay connected with home through innovative mobile money solutions and remittance platforms.',
-          location: userProfile.location || 'London',
-          country: 'United Kingdom',
-          heritageCountry: userProfile.heritageCountry || 'Kenya',
-          profession: 'Senior Software Engineer',
-          company: 'Safaricom Europe',
-          education: 'Computer Science, University of Nairobi',
-          skills: ['React', 'Node.js', 'TypeScript', 'Python', 'AWS', 'M-Pesa API', 'Mobile Development'],
-          languages: ['English', 'Swahili', 'Kikuyu'],
-          interests: ['Technology', 'Kenyan Culture', 'Mentorship', 'Travel', 'Nyama Choma'],
-          linkedinUrl: 'https://linkedin.com/in/gracewanjiku',
-          twitterUrl: 'https://twitter.com/gracewanjiku',
-          websiteUrl: 'https://gracewanjiku.dev',
-          isMentor: true,
-          isSeekingMentorship: false,
-          isPublicProfile: true,
-          phoneNumber: userProfile.phoneNumber,
-          createdAt: userProfile.createdAt || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
-          verified: userProfile.verified || true,
-          connectionCount: 156,
-          postsCount: 23,
-          eventsAttended: 8,
-        }
-        setProfile(mockProfile)
-        setEditedProfile(mockProfile)
-      } else {
-        const profile: Profile = {
-          id: userProfile.id,
-          firstName: userProfile.firstName || '',
-          lastName: userProfile.lastName || '',
-          email: userProfile.email,
-          profileImage: userProfile.profileImage,
-          bio: userProfile.bio,
-          location: userProfile.location,
-          country: userProfile.country,
-          heritageCountry: userProfile.heritageCountry,
-          profession: userProfile.profession,
-          company: userProfile.company,
-          education: userProfile.education,
-          skills: userProfile.skills || [],
-          languages: userProfile.languages || [],
-          interests: userProfile.interests || [],
-          linkedinUrl: userProfile.linkedinUrl,
-          twitterUrl: userProfile.twitterUrl,
-          websiteUrl: userProfile.websiteUrl,
-          isMentor: userProfile.isMentor || false,
-          isSeekingMentorship: userProfile.isSeekingMentorship || false,
-          isPublicProfile: userProfile.isPublicProfile !== false,
-          phoneNumber: userProfile.phoneNumber,
-          createdAt: userProfile.createdAt,
-          verified: userProfile.verified,
-          connectionCount: userProfile.connectionCount || 0,
-          postsCount: userProfile.postsCount || 0,
-          eventsAttended: userProfile.eventsAttended || 0,
-        }
-        setProfile(profile)
-        setEditedProfile(profile)
-      }
+      setProfile(data)
+      setEditedProfile(data)
     } catch (error) {
       console.error('Error loading profile:', error)
       toast.error('Failed to load profile')
@@ -169,30 +84,31 @@ export default function ProfilePage() {
     try {
       setSaving(true)
       
+      // Only allowlisted columns are accepted by PATCH /api/profile; anything
+      // else in this object is ignored server-side.
       const updateData = {
-        firstName: editedProfile.firstName,
-        lastName: editedProfile.lastName,
+        full_name: editedProfile.full_name,
         bio: editedProfile.bio,
         location: editedProfile.location,
         country: editedProfile.country,
-        heritageCountry: editedProfile.heritageCountry,
+        heritage_countries: editedProfile.heritage_countries,
         profession: editedProfile.profession,
         company: editedProfile.company,
         education: editedProfile.education,
         skills: editedProfile.skills,
         languages: editedProfile.languages,
         interests: editedProfile.interests,
-        linkedinUrl: editedProfile.linkedinUrl,
-        twitterUrl: editedProfile.twitterUrl,
-        websiteUrl: editedProfile.websiteUrl,
-        isMentor: editedProfile.isMentor,
-        isSeekingMentorship: editedProfile.isSeekingMentorship,
-        isPublicProfile: editedProfile.isPublicProfile,
-        phoneNumber: editedProfile.phoneNumber,
+        linkedin_url: editedProfile.linkedin_url,
+        twitter_url: editedProfile.twitter_url,
+        website_url: editedProfile.website_url,
+        is_mentor: editedProfile.is_mentor,
+        is_seeking_mentorship: editedProfile.is_seeking_mentorship,
+        whatsapp_number: editedProfile.whatsapp_number,
       }
-      
-      await updateUserProfile(updateData)
-      setProfile({ ...profile!, ...editedProfile })
+
+      const { data: saved, error } = await updateUserProfile<Profile>(updateData)
+      if (error) throw error
+      if (saved) setProfile(saved)
       setEditing(false)
       toast.success('Profile updated successfully')
     } catch (error) {
@@ -279,9 +195,9 @@ export default function ProfilePage() {
             <div className="flex items-center space-x-6">
               <div className="relative">
                 <Avatar className="w-24 h-24 border-4 border-[var(--terracotta)]/20">
-                  <AvatarImage src={profile.profileImage} alt={`${profile.firstName} ${profile.lastName}`} />
+                  <AvatarImage src={profile.avatar_url ?? undefined} alt={displayName(profile)} />
                   <AvatarFallback className="text-2xl bg-[var(--terracotta)] text-white">
-                    {profile.firstName?.[0]}{profile.lastName?.[0]}
+                    {initials(profile)}
                   </AvatarFallback>
                 </Avatar>
                 {editing && (
@@ -295,8 +211,8 @@ export default function ProfilePage() {
               </div>
               <div>
                 <div className="flex items-center space-x-2">
-                  <h1 className="text-display text-3xl font-bold text-foreground">{profile.firstName} {profile.lastName}</h1>
-                  {profile.verified && (
+                  <h1 className="text-display text-3xl font-bold text-foreground">{displayName(profile)}</h1>
+                  {profile.is_verified && (
                     <Shield className="h-6 w-6 text-[var(--terracotta)]" />
                   )}
                 </div>
@@ -315,28 +231,28 @@ export default function ProfilePage() {
                   <MapPin className="h-4 w-4" />
                   <span>{profile.location}, {profile.country}</span>
                 </div>
-                {profile.heritageCountry && (
+                {heritage(profile) && (
                   <div className="flex items-center space-x-2 mt-2">
                     <span className="text-sm text-muted-foreground">Heritage:</span>
                     <span className="text-sm font-medium">
-                      {getCountryFlag(profile.heritageCountry)} {profile.heritageCountry}
+                      {getCountryFlag(heritage(profile))} {heritage(profile)}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center space-x-1 mt-2 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  <span>Joined {new Date(profile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</span>
+                  <span>Joined {new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</span>
                 </div>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              {profile.isMentor && (
+              {profile.is_mentor && (
                 <Badge className="bg-[var(--terracotta)] text-white flex items-center space-x-1">
                   <Star className="h-3 w-3" />
                   <span>Mentor</span>
                 </Badge>
               )}
-              {profile.isSeekingMentorship && (
+              {profile.is_seeking_mentorship && (
                 <Badge variant="outline" className="border-blue-500 text-[var(--terracotta)]">
                   <Target className="h-3 w-3 mr-1" />
                   Seeking Mentorship
@@ -422,7 +338,7 @@ export default function ProfilePage() {
                       placeholder="City"
                     />
                   ) : (
-                    <Input value={profile.location} disabled />
+                    <Input value={profile.location ?? ''} disabled />
                   )}
                 </div>
                 <div>
@@ -444,7 +360,7 @@ export default function ProfilePage() {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Input value={profile.country} disabled />
+                    <Input value={profile.country ?? ''} disabled />
                   )}
                 </div>
               </div>
@@ -513,7 +429,7 @@ export default function ProfilePage() {
                     placeholder="Your job title"
                   />
                 ) : (
-                  <Input value={profile.profession} disabled />
+                  <Input value={profile.profession ?? ''} disabled />
                 )}
               </div>
               <div>
@@ -525,7 +441,7 @@ export default function ProfilePage() {
                     placeholder="Your company"
                   />
                 ) : (
-                  <Input value={profile.company} disabled />
+                  <Input value={profile.company ?? ''} disabled />
                 )}
               </div>
             </CardContent>
@@ -696,8 +612,8 @@ export default function ProfilePage() {
                   <p className="text-sm text-muted-foreground">Make your profile visible to other community members</p>
                 </div>
                 <Switch
-                  checked={editing ? editedProfile.isPublicProfile : profile.isPublicProfile}
-                  onCheckedChange={(checked) => editing && setEditedProfile({ ...editedProfile, isPublicProfile: checked })}
+                  checked={editing ? editedProfile.is_public_profile : profile.is_public_profile}
+                  onCheckedChange={(checked) => editing && setEditedProfile({ ...editedProfile, is_public_profile: checked })}
                   disabled={!editing}
                 />
               </div>
@@ -707,19 +623,19 @@ export default function ProfilePage() {
                   <p className="text-sm text-muted-foreground">Allow other members to request mentorship from you</p>
                 </div>
                 <Switch
-                  checked={editing ? editedProfile.isMentor : profile.isMentor}
-                  onCheckedChange={(checked) => editing && setEditedProfile({ ...editedProfile, isMentor: checked })}
+                  checked={editing ? editedProfile.is_mentor : profile.is_mentor}
+                  onCheckedChange={(checked) => editing && setEditedProfile({ ...editedProfile, is_mentor: checked })}
                   disabled={!editing}
                 />
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-medium">Seeking Mentorship</h3>
-                  <p className="text-sm text-muted-foreground">Let mentors know you're looking for guidance</p>
+                  <p className="text-sm text-muted-foreground">Let mentors know you&apos;re looking for guidance</p>
                 </div>
                 <Switch
-                  checked={editing ? editedProfile.isSeekingMentorship : profile.isSeekingMentorship}
-                  onCheckedChange={(checked) => editing && setEditedProfile({ ...editedProfile, isSeekingMentorship: checked })}
+                  checked={editing ? editedProfile.is_seeking_mentorship : profile.is_seeking_mentorship}
+                  onCheckedChange={(checked) => editing && setEditedProfile({ ...editedProfile, is_seeking_mentorship: checked })}
                   disabled={!editing}
                 />
               </div>
@@ -737,23 +653,23 @@ export default function ProfilePage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div className="p-4 rounded-lg bg-[var(--terracotta)]/10">
                   <Users className="h-6 w-6 mx-auto mb-2 text-[var(--terracotta)]" />
-                  <div className="text-2xl font-bold text-[var(--terracotta)]">{profile.connectionCount || 0}</div>
+                  <div className="text-2xl font-bold text-[var(--terracotta)]">{profile.connection_count}</div>
                   <div className="text-sm text-muted-foreground">Connections</div>
                 </div>
                 <div className="p-4 rounded-lg bg-blue-50">
                   <MessageCircle className="h-6 w-6 mx-auto mb-2 text-[var(--terracotta)]" />
-                  <div className="text-2xl font-bold text-[var(--terracotta)]">{profile.postsCount || 0}</div>
+                  <div className="text-2xl font-bold text-[var(--terracotta)]">{profile.posts_count}</div>
                   <div className="text-sm text-muted-foreground">Posts</div>
                 </div>
                 <div className="p-4 rounded-lg bg-purple-50">
                   <Calendar className="h-6 w-6 mx-auto mb-2 text-purple-600" />
-                  <div className="text-2xl font-bold text-purple-600">{profile.eventsAttended || 0}</div>
+                  <div className="text-2xl font-bold text-purple-600">{profile.events_attended}</div>
                   <div className="text-sm text-muted-foreground">Events</div>
                 </div>
                 <div className="p-4 rounded-lg bg-orange-50">
                   <Award className="h-6 w-6 mx-auto mb-2 text-orange-600" />
                   <div className="text-2xl font-bold text-orange-600">
-                    {Math.floor((Date.now() - new Date(profile.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30))}
+                    {Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24 * 30))}
                   </div>
                   <div className="text-sm text-muted-foreground">Months</div>
                 </div>

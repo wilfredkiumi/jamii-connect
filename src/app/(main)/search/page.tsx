@@ -45,7 +45,25 @@ interface SearchResult {
     name: string
     avatar: string
   }
-  metadata?: any
+  /** Type-specific extras rendered beside a result; varies by result kind. */
+  metadata?: {
+    profession?: string
+    company?: string
+    verified?: boolean
+    salary?: string
+    type?: string
+    remote?: boolean
+    date?: string
+    location?: string
+    attendees?: number
+    rating?: number
+    price?: string
+    category?: string
+    likes?: number
+    comments?: number
+    shares?: number
+    createdAt?: string
+  }
 }
 
 function SearchPageContent() {
@@ -112,7 +130,7 @@ function SearchPageContent() {
           country: 'United Kingdom',
           image: '/images/convention.jpg',
           metadata: {
-            date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
             price: '£75',
             attendees: 234,
           }
@@ -149,7 +167,7 @@ function SearchPageContent() {
             likes: 45,
             comments: 12,
             shares: 8,
-            createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+            createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
           }
         },
       ]
@@ -276,7 +294,7 @@ function SearchPageContent() {
         </h1>
         {initialQuery && (
           <p className="text-muted-foreground text-lg">
-            Showing results for "{initialQuery}"
+            Showing results for &quot;{initialQuery}&quot;
           </p>
         )}
       </div>

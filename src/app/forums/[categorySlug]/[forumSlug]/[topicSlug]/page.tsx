@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThumbsUp, ThumbsDown, MessageCircle, ArrowLeft } from 'lucide-react';
 import { forumTopicsData, Topic, Post } from '@/lib/forum-topics-data';
 import { forumCategories } from '@/lib/forums-data';
+import { Badge } from '@/components/ui/badge'
 
 interface TopicPageProps {
   params: Promise<{ categorySlug: string; forumSlug: string; topicSlug: string }>;

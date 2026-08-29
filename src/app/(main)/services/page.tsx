@@ -32,31 +32,11 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { getUserProfile } from '@/lib/amplify/auth'
-import { listServices, searchServices } from '@/lib/amplify/data-access'
+import { getUserProfile, listServices, searchServices } from '@/lib/api/client'
+import type { ServiceWithProvider as Service, Profile } from '@/types/database'
 
-interface Service {
-  id: string
-  service_name: string
-  category: string
-  description: string
-  contact_phone?: string
-  contact_email?: string
-  website?: string
-  location?: string
-  country?: string
-  is_verified: boolean
-  rating?: number
-  reviews_count?: number
-  provider: {
-    id: string
-    full_name: string
-    avatar_url?: string
-    profession?: string
-    heritage_countries?: string[]
-  }
-  created_at: string
-}
+// full_name is nullable in the profiles table.
+const providerName = (service: Service) => service.provider.full_name ?? 'Community member'
 
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([])
@@ -67,7 +47,7 @@ export default function ServicesPage() {
   const [verifiedOnly, setVerifiedOnly] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<Profile | null>(null)
 
   useEffect(() => {
     loadUser()
@@ -76,8 +56,8 @@ export default function ServicesPage() {
 
   const loadUser = async () => {
     try {
-      const profile = await getUserProfile()
-      setUser(profile)
+      const { data } = await getUserProfile<Profile>()
+      setUser(data)
     } catch (error) {
       console.error('Error loading user:', error)
     }
@@ -86,138 +66,17 @@ export default function ServicesPage() {
   const loadServices = async () => {
     try {
       setLoading(true)
-      
-      // Load services from DynamoDB through API
-      const { data, error } = await listServices({
-        status: 'active',
-        limit: 50,
-      })
+      const { data, error } = await listServices<Service>({ limit: 50 })
 
       if (error) {
         throw error
       }
 
-      // If no services from API, use mock data for demo
-      if (!data || data.length === 0) {
-        const mockServices: Service[] = [
-        {
-          id: '1',
-          service_name: 'African Heritage Legal Services',
-          category: 'Legal',
-          description: 'Specialized legal services for immigration, business formation, and international law. Helping diaspora navigate legal challenges with cultural understanding.',
-          contact_phone: '+1-416-555-0123',
-          contact_email: 'info@ahlegals.com',
-          website: 'https://ahlegals.com',
-          location: 'Toronto',
-          country: 'Canada',
-          is_verified: true,
-          rating: 4.8,
-          reviews_count: 24,
-          provider: {
-            id: '1',
-            full_name: 'Adaora Okonkwo',
-            avatar_url: '',
-            profession: 'Immigration Lawyer',
-            heritage_countries: ['Nigeria'],
-          },
-          created_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: '2',
-          service_name: 'Caribbean Cuisine Catering',
-          category: 'Food & Catering',
-          description: 'Authentic Caribbean cuisine for events, parties, and corporate functions. Bringing the taste of home to the diaspora community.',
-          contact_phone: '+44-20-7555-0456',
-          contact_email: 'bookings@caribcuisine.co.uk',
-          website: 'https://caribcuisine.co.uk',
-          location: 'London',
-          country: 'United Kingdom',
-          is_verified: true,
-          rating: 4.9,
-          reviews_count: 67,
-          provider: {
-            id: '2',
-            full_name: 'Marcus Thompson',
-            avatar_url: '',
-            profession: 'Chef & Entrepreneur',
-            heritage_countries: ['Jamaica'],
-          },
-          created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: '3',
-          service_name: 'Diaspora Financial Planning',
-          category: 'Financial Services',
-          description: 'Comprehensive financial planning for diaspora families. Investment advice, remittance optimization, and cross-border financial strategies.',
-          contact_phone: '+1-212-555-0789',
-          contact_email: 'consult@diasporafinance.com',
-          website: 'https://diasporafinance.com',
-          location: 'New York',
-          country: 'United States',
-          is_verified: true,
-          rating: 4.7,
-          reviews_count: 43,
-          provider: {
-            id: '3',
-            full_name: 'Kwame Asante',
-            avatar_url: '',
-            profession: 'Financial Advisor',
-            heritage_countries: ['Ghana'],
-          },
-          created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: '4',
-          service_name: 'African Art & Design Studio',
-          category: 'Creative Services',
-          description: 'Contemporary African art, interior design, and cultural consulting. Bringing African aesthetics to modern spaces.',
-          contact_phone: '+33-1-55-55-0321',
-          contact_email: 'studio@africanartdesign.fr',
-          website: 'https://africanartdesign.fr',
-          location: 'Paris',
-          country: 'France',
-          is_verified: false,
-          rating: 4.6,
-          reviews_count: 18,
-          provider: {
-            id: '4',
-            full_name: 'Amina Diallo',
-            avatar_url: '',
-            profession: 'Artist & Designer',
-            heritage_countries: ['Senegal'],
-          },
-          created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: '5',
-          service_name: 'Tech Consulting for African Markets',
-          category: 'Technology',
-          description: 'Strategic technology consulting for businesses entering African markets. Digital transformation and market entry strategies.',
-          contact_phone: '+49-30-555-0654',
-          contact_email: 'hello@afritechconsult.de',
-          website: 'https://afritechconsult.de',
-          location: 'Berlin',
-          country: 'Germany',
-          is_verified: true,
-          rating: 4.9,
-          reviews_count: 31,
-          provider: {
-            id: '5',
-            full_name: 'Fatima Kone',
-            avatar_url: '',
-            profession: 'Tech Consultant',
-            heritage_countries: ['Mali'],
-          },
-          created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        ]
-        setServices(mockServices)
-      } else {
-        setServices(data as Service[])
-      }
+      setServices(data ?? [])
     } catch (error) {
       console.error('Error loading services:', error)
       toast.error('Failed to load services')
+      setServices([])
     } finally {
       setLoading(false)
     }
@@ -231,13 +90,13 @@ export default function ServicesPage() {
 
     try {
       setLoading(true)
-      const { data, error } = await searchServices(searchQuery)
+      const { data, error } = await searchServices<Service>(searchQuery)
       
       if (error) {
         throw error
       }
       
-      setServices(data as Service[])
+      setServices(data ?? [])
     } catch (error) {
       console.error('Error searching services:', error)
       toast.error('Failed to search services')
@@ -464,9 +323,9 @@ export default function ServicesPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-4 flex-1">
                         <Avatar className="h-12 w-12 border-2 border-[var(--clay-200)]">
-                          <AvatarImage src={service.provider.avatar_url} alt={service.provider.full_name} />
+                          <AvatarImage src={service.provider.avatar_url ?? undefined} alt={providerName(service)} />
                           <AvatarFallback className="bg-[var(--clay-100)] text-[var(--clay)]">
-                            {service.provider.full_name.split(' ').map(n => n[0]).join('')}
+                            {providerName(service).split(' ').map((n: string) => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
                         
@@ -482,7 +341,7 @@ export default function ServicesPage() {
                           
                           <div className="flex items-center space-x-2 mb-2">
                             <span className="text-[var(--clay-600)] font-medium">
-                              by {service.provider.full_name}
+                              by {providerName(service)}
                             </span>
                             <span className="text-[var(--clay-500)]">•</span>
                             <span className="text-[var(--clay-500)]">{service.provider.profession}</span>
@@ -506,7 +365,7 @@ export default function ServicesPage() {
                               </div>
                               <span className="text-sm font-medium">{service.rating}</span>
                               <span className="text-sm text-[var(--clay-500)]">
-                                ({service.reviews_count} reviews)
+                                ({service.review_count} reviews)
                               </span>
                             </div>
                           )}
@@ -518,7 +377,7 @@ export default function ServicesPage() {
                           {service.provider.heritage_countries && service.provider.heritage_countries.length > 0 && (
                             <div className="flex items-center space-x-2 mb-4">
                               <span className="text-xs text-[var(--clay-500)]">Heritage:</span>
-                              {service.provider.heritage_countries.map((country, index) => (
+                              {service.provider.heritage_countries.map((country: string, index: number) => (
                                 <span key={index} className="text-xs">
                                   {getCountryFlag(country)} {country}
                                 </span>

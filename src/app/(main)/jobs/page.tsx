@@ -26,35 +26,9 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { getUserProfile } from '@/lib/amplify/auth'
-import { listJobs, searchJobs } from '@/lib/amplify/data-access'
+import { getUserProfile, listJobs, searchJobs } from '@/lib/api/client'
 import { Badge } from '@/components/ui/badge'
-
-interface Job {
-  id: string
-  title: string
-  company: string
-  company_logo?: string
-  location: string
-  country: string
-  job_type: string
-  work_type: string
-  salary_min?: number
-  salary_max?: number
-  currency?: string
-  description: string
-  requirements: string[]
-  posted_at: string
-  is_bookmarked?: boolean
-  applications_count?: number
-  company_size?: string
-  industry?: string
-  experience_level: string
-  skills: string[]
-  is_diaspora_friendly: boolean
-  visa_sponsorship?: boolean
-  status?: string
-}
+import type { Job, Profile } from '@/types/database'
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([])
@@ -67,7 +41,7 @@ export default function JobsPage() {
   const [salaryRange, setSalaryRange] = useState('all')
   const [diasporaFriendlyOnly, setDiasporaFriendlyOnly] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<Profile | null>(null)
 
   useEffect(() => {
     loadUser()
@@ -76,8 +50,8 @@ export default function JobsPage() {
 
   const loadUser = async () => {
     try {
-      const profile = await getUserProfile()
-      setUser(profile)
+      const { data } = await getUserProfile<Profile>()
+      setUser(data)
     } catch (error) {
       console.error('Error loading user:', error)
     }
@@ -86,148 +60,17 @@ export default function JobsPage() {
   const loadJobs = async () => {
     try {
       setLoading(true)
-      
-      // Load jobs from DynamoDB through API
-      const { data, error } = await listJobs({
-        status: 'active',
-        limit: 50,
-      })
+      const { data, error } = await listJobs<Job>({ limit: 50 })
 
       if (error) {
         throw error
       }
 
-      // If no jobs from API, use mock data for demo
-      if (!data || data.length === 0) {
-        const mockJobs: Job[] = [
-          {
-            id: '1',
-            title: 'Senior Software Engineer - Fintech',
-            company: 'AfriPay Technologies',
-            company_logo: '/logos/afripay.png',
-            location: 'Lagos',
-            country: 'Nigeria',
-            job_type: 'full-time',
-            work_type: 'hybrid',
-            salary_min: 80000,
-            salary_max: 120000,
-            currency: 'USD',
-            description: 'Join our mission to revolutionize payments across Africa. We\'re building the next generation of financial infrastructure for the continent.',
-            requirements: ['React', 'Node.js', 'TypeScript', 'AWS'],
-            posted_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            is_bookmarked: false,
-            applications_count: 23,
-            company_size: '50-200 employees',
-            industry: 'Fintech',
-            experience_level: 'senior',
-            skills: ['React', 'Node.js', 'TypeScript', 'AWS', 'MongoDB'],
-            is_diaspora_friendly: true,
-            visa_sponsorship: true,
-          },
-          {
-            id: '2',
-            title: 'Marketing Manager - Caribbean Markets',
-            company: 'Island Connect Ltd',
-            company_logo: '/logos/island-connect.png',
-            location: 'Kingston',
-            country: 'Jamaica',
-            job_type: 'full-time',
-            work_type: 'remote',
-            salary_min: 45000,
-            salary_max: 65000,
-            currency: 'USD',
-            description: 'Lead marketing initiatives across Caribbean markets. Perfect for someone with deep understanding of Caribbean culture and business practices.',
-            requirements: ['Marketing', 'Digital Strategy', 'Analytics'],
-            posted_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            is_bookmarked: true,
-            applications_count: 15,
-            company_size: '10-50 employees',
-            industry: 'Marketing',
-            experience_level: 'mid',
-            skills: ['Digital Marketing', 'SEO', 'Social Media', 'Analytics'],
-            is_diaspora_friendly: true,
-            visa_sponsorship: false,
-          },
-          {
-            id: '3',
-            title: 'Data Scientist - Healthcare AI',
-            company: 'MedTech Solutions',
-            company_logo: '/logos/medtech.png',
-            location: 'Cape Town',
-            country: 'South Africa',
-            job_type: 'full-time',
-            work_type: 'on-site',
-            salary_min: 70000,
-            salary_max: 95000,
-            currency: 'USD',
-            description: 'Apply AI and machine learning to solve healthcare challenges across Africa. Work with cutting-edge technology to improve healthcare outcomes.',
-            requirements: ['Python', 'Machine Learning', 'Healthcare Domain'],
-            posted_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-            is_bookmarked: false,
-            applications_count: 31,
-            company_size: '200-500 employees',
-            industry: 'Healthcare',
-            experience_level: 'senior',
-            skills: ['Python', 'TensorFlow', 'Healthcare', 'Statistics'],
-            is_diaspora_friendly: true,
-            visa_sponsorship: true,
-          },
-          {
-            id: '4',
-            title: 'Business Development Representative',
-            company: 'Global Ventures Inc',
-            company_logo: '/logos/global-ventures.png',
-            location: 'Toronto',
-            country: 'Canada',
-            job_type: 'full-time',
-            work_type: 'hybrid',
-            salary_min: 55000,
-            salary_max: 75000,
-            currency: 'CAD',
-            description: 'Expand our business across African and Caribbean markets. Ideal for someone with strong networks in these regions.',
-            requirements: ['Sales', 'Business Development', 'Market Research'],
-            posted_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-            is_bookmarked: false,
-            applications_count: 18,
-            company_size: '500+ employees',
-            industry: 'Business Services',
-            experience_level: 'mid',
-            skills: ['Sales', 'CRM', 'Market Analysis', 'Networking'],
-            is_diaspora_friendly: true,
-            visa_sponsorship: false,
-          },
-          {
-            id: '5',
-            title: 'Community Manager - Kenyan Diaspora',
-            company: 'Jamii Connect',
-            company_logo: '/logos/jamii-connect.png',
-            location: 'London',
-            country: 'United Kingdom',
-            job_type: 'full-time',
-            work_type: 'remote',
-            salary_min: 35000,
-            salary_max: 45000,
-            currency: 'GBP',
-            description: 'Build and nurture our growing Kenyan diaspora community across the UK. Perfect for someone passionate about connecting people and creating impact.',
-            requirements: ['Community Management', 'Social Media', 'Event Planning'],
-            posted_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-            is_bookmarked: false,
-            applications_count: 42,
-            company_size: '10-50 employees',
-            industry: 'Community & Social',
-            experience_level: 'mid',
-            skills: ['Community Building', 'Content Creation', 'Events', 'Social Media'],
-            is_diaspora_friendly: true,
-            visa_sponsorship: true,
-          },
-        ]
-        setJobs(mockJobs)
-      } else {
-        setJobs(data as Job[])
-      }
+      setJobs(data ?? [])
     } catch (error) {
       console.error('Error loading jobs:', error)
       toast.error('Failed to load jobs')
+      setJobs([])
     } finally {
       setLoading(false)
     }
@@ -241,13 +84,13 @@ export default function JobsPage() {
 
     try {
       setLoading(true)
-      const { data, error } = await searchJobs(searchQuery)
+      const { data, error } = await searchJobs<Job>(searchQuery)
       
       if (error) {
         throw error
       }
       
-      setJobs(data as Job[])
+      setJobs(data ?? [])
     } catch (error) {
       console.error('Error searching jobs:', error)
       toast.error('Failed to search jobs')
@@ -523,7 +366,7 @@ export default function JobsPage() {
                 <Checkbox
                   id="diaspora-friendly"
                   checked={diasporaFriendlyOnly}
-                  onCheckedChange={setDiasporaFriendlyOnly}
+                  onCheckedChange={(checked) => setDiasporaFriendlyOnly(checked === true)}
                 />
                 <label htmlFor="diaspora-friendly" className="text-sm font-medium">
                   Diaspora Friendly Only

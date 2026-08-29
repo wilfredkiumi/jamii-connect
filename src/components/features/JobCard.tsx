@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import type { Job } from '@/types/database'
 import Link from 'next/link'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
@@ -26,40 +27,16 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-interface Job {
-  id: string
-  title: string
-  company: string
-  company_logo?: string
-  location: string
-  country: string
-  job_type: 'full-time' | 'part-time' | 'contract' | 'freelance' | 'internship'
-  work_type: 'remote' | 'hybrid' | 'on-site'
-  salary_min?: number
-  salary_max?: number
-  currency: string
-  description: string
-  requirements: string[]
-  benefits?: string[]
-  posted_at: string
-  expires_at?: string
-  is_bookmarked: boolean
-  applications_count: number
-  company_size?: string
-  industry?: string
-  experience_level: 'entry' | 'mid' | 'senior' | 'executive'
-  skills: string[]
-  is_diaspora_friendly: boolean
-}
-
 interface JobCardProps {
   job: Job
+  /** Bookmarking is per-viewer UI state, not a column on the job row. */
+  bookmarked?: boolean
   onBookmark?: (jobId: string) => void
   onApply?: (jobId: string) => void
 }
 
-export default function JobCard({ job, onBookmark, onApply }: JobCardProps) {
-  const [isBookmarked, setIsBookmarked] = useState(job.is_bookmarked)
+export default function JobCard({ job, bookmarked = false, onBookmark, onApply }: JobCardProps) {
+  const [isBookmarked, setIsBookmarked] = useState(bookmarked)
 
   const handleBookmark = async () => {
     try {
@@ -266,7 +243,7 @@ export default function JobCard({ job, onBookmark, onApply }: JobCardProps) {
             </div>
             <div className="flex items-center space-x-1">
               <Clock className="h-4 w-4" />
-              <span>{formatDistanceToNow(new Date(job.posted_at), { addSuffix: true })}</span>
+              <span>{formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}</span>
             </div>
           </div>
         </div>

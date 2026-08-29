@@ -8,6 +8,8 @@ export async function GET(request: NextRequest) {
   const services = await listServices({
     limit: Number(searchParams.get('limit')) || 20,
     offset: Number(searchParams.get('offset')) || 0,
+    q: searchParams.get('q') || undefined,
+    country: searchParams.get('country') || undefined,
     category: searchParams.get('category') || undefined,
     location: searchParams.get('location') || undefined,
     is_verified: searchParams.get('verified') === 'true' ? true : undefined,

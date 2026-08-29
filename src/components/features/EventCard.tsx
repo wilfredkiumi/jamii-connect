@@ -28,46 +28,23 @@ import {
   Video,
 } from 'lucide-react'
 import { toast } from 'sonner'
-
-interface Event {
-  id: string
-  title: string
-  description: string
-  image_url?: string
-  start_date: string
-  end_date?: string
-  location?: string
-  country?: string
-  is_virtual: boolean
-  event_type: 'conference' | 'workshop' | 'networking' | 'cultural' | 'business' | 'social'
-  price?: number
-  currency: string
-  max_attendees?: number
-  current_attendees: number
-  is_free: boolean
-  organizer: {
-    id: string
-    name: string
-    avatar_url?: string
-    organization?: string
-  }
-  is_bookmarked: boolean
-  is_attending: boolean
-  tags: string[]
-  registration_url?: string
-  created_at: string
-}
+import type { EventWithOrganizer as Event } from '@/types/database'
 
 interface EventCardProps {
   event: Event
+  /** Per-viewer UI state; there is no bookmarks table backing this yet. */
+  bookmarked?: boolean
   onBookmark?: (eventId: string) => void
   onRSVP?: (eventId: string) => void
   onShare?: (eventId: string) => void
 }
 
-export default function EventCard({ event, onBookmark, onRSVP, onShare }: EventCardProps) {
-  const [isBookmarked, setIsBookmarked] = useState(event.is_bookmarked)
+export default function EventCard({ event, bookmarked = false, onBookmark, onRSVP, onShare }: EventCardProps) {
+  const [isBookmarked, setIsBookmarked] = useState(bookmarked)
   const [isAttending, setIsAttending] = useState(event.is_attending)
+
+  // full_name is nullable; fall back rather than letting `.split()` throw.
+  const organizerName = event.organizer.full_name ?? 'Community member'
   const [attendeesCount, setAttendeesCount] = useState(event.current_attendees)
 
   const handleBookmark = async () => {
@@ -205,14 +182,14 @@ export default function EventCard({ event, onBookmark, onRSVP, onShare }: EventC
             </Link>
             <div className="flex items-center space-x-2 mt-2">
               <Avatar className="h-6 w-6">
-                <AvatarImage src={event.organizer.avatar_url} alt={event.organizer.name} />
+                <AvatarImage src={event.organizer.avatar_url ?? undefined} alt={organizerName} />
                 <AvatarFallback className="text-xs">
-                  {event.organizer.name.split(' ').map(n => n[0]).join('')}
+                  {organizerName.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
               <span className="text-[var(--clay-600)] text-sm">
-                by {event.organizer.name}
-                {event.organizer.organization && ` • ${event.organizer.organization}`}
+                by {organizerName}
+                {event.organizer.profession && ` • ${event.organizer.profession}`}
               </span>
             </div>
           </div>
