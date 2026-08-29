@@ -1,53 +1,41 @@
 import { query } from './index';
+import type { Connection, ConnectionWithProfile } from '@/types/database';
 
-export interface Connection {
-  id: string;
-  requester_id: string;
-  addressee_id: string;
-  status: 'pending' | 'accepted' | 'declined';
-  message: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ConnectionWithProfile extends Connection {
-  connected_user_name: string | null;
-  connected_user_avatar: string | null;
-  connected_user_profession: string | null;
-}
+export type { Connection, ConnectionWithProfile };
 
 export async function listConnections(userId: string, options?: {
   limit?: number;
   offset?: number;
   status?: string;
 }): Promise<ConnectionWithProfile[]> {
-  const limit = options?.limit || 20;
-  const offset = options?.offset || 0;
-  const statusFilter = options?.status ? `AND c.status = $4` : '';
+  const params: unknown[] = [userId];
+  // $2/$3 are limit/offset; an optional status filter takes $4.
+  const statusFilter = options?.status ? 'AND c.status = $4' : '';
 
-  const params: unknown[] = [userId, userId, limit, offset];
+  params.push(options?.limit ?? 20, options?.offset ?? 0);
   if (options?.status) params.push(options.status);
 
   return query<ConnectionWithProfile>(
     `SELECT c.*,
-      CASE
-        WHEN c.requester_id = $1 THEN pr.full_name
-        ELSE req.full_name
-      END as connected_user_name,
-      CASE
-        WHEN c.requester_id = $1 THEN pr.avatar_url
-        ELSE req.avatar_url
-      END as connected_user_avatar,
-      CASE
-        WHEN c.requester_id = $1 THEN pr.profession
-        ELSE req.profession
-      END as connected_user_profession
+      json_build_object(
+        'id', other.id,
+        'full_name', other.full_name,
+        'avatar_url', other.avatar_url,
+        'location', other.location,
+        'country', other.country,
+        'profession', other.profession,
+        'company', other.company,
+        'bio', other.bio,
+        'heritage_countries', other.heritage_countries,
+        'is_verified', other.is_verified
+      ) AS profile
      FROM connections c
-     JOIN profiles pr ON c.addressee_id = pr.id
-     JOIN profiles req ON c.requester_id = req.id
-     WHERE (c.requester_id = $1 OR c.addressee_id = $2) ${statusFilter}
+     -- Join whichever side of the connection is not the viewer.
+     JOIN profiles other
+       ON other.id = CASE WHEN c.requester_id = $1 THEN c.addressee_id ELSE c.requester_id END
+     WHERE (c.requester_id = $1 OR c.addressee_id = $1) ${statusFilter}
      ORDER BY c.created_at DESC
-     LIMIT $3 OFFSET $4`,
+     LIMIT $2 OFFSET $3`,
     params
   );
 }
@@ -57,6 +45,9 @@ export async function createConnection(data: {
   addressee_id: string;
   message?: string;
 }): Promise<Connection> {
+  if (data.requester_id === data.addressee_id) {
+    throw new Error('Cannot send a connection request to yourself');
+  }
   const rows = await query<Connection>(
     `INSERT INTO connections (requester_id, addressee_id, message)
      VALUES ($1, $2, $3)
@@ -66,13 +57,22 @@ export async function createConnection(data: {
   return rows[0];
 }
 
-export async function updateConnectionStatus(
+/**
+ * Only the addressee of a still-pending request may accept or decline it.
+ * The ownership check lives in the WHERE clause so it cannot be bypassed by a
+ * caller that forgets to check first; a null return means "not yours, already
+ * answered, or nonexistent" — all of which the caller should treat as a 404.
+ */
+export async function respondToConnection(
   id: string,
+  addresseeId: string,
   status: 'accepted' | 'declined'
 ): Promise<Connection | null> {
   const rows = await query<Connection>(
-    'UPDATE connections SET status = $1 WHERE id = $2 RETURNING *',
-    [status, id]
+    `UPDATE connections SET status = $1, updated_at = NOW()
+     WHERE id = $2 AND addressee_id = $3 AND status = 'pending'
+     RETURNING *`,
+    [status, id, addresseeId]
   );
   return rows[0] || null;
 }

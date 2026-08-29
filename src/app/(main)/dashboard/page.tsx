@@ -33,7 +33,8 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { getUserProfile } from '@/lib/amplify/auth'
+import { getUserProfile, listPosts, listJobs, listEvents } from '@/lib/api/client'
+import type { Profile, PostWithAuthor, Job, EventWithOrganizer } from '@/types/database'
 
 interface DashboardStats {
   totalMembers: number
@@ -58,9 +59,9 @@ export default function DashboardPage() {
     upcomingEvents: 0,
     newConnections: 0,
   })
-  const [posts, setPosts] = useState([])
-  const [jobs, setJobs] = useState([])
-  const [events, setEvents] = useState([])
+  const [posts, setPosts] = useState<PostWithAuthor[]>([])
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [events, setEvents] = useState<EventWithOrganizer[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCountry, setSelectedCountry] = useState('all')
@@ -72,194 +73,47 @@ export default function DashboardPage() {
   }, [])
 
   const loadUser = async () => {
-    try {
-      const profile = await getUserProfile()
-      if (profile) {
-        setUser({
-          id: profile.id,
-          firstName: profile.firstName || '',
-          lastName: profile.lastName || '',
-          location: profile.location,
-          verified: profile.verified,
-        })
-      }
-    } catch (error) {
-      console.error('Error loading user:', error)
+    const { data: profile, error } = await getUserProfile<Profile>()
+    if (error || !profile) {
+      if (error) console.error('Error loading user:', error)
+      return
     }
+    const [firstName = '', ...rest] = (profile.full_name ?? '').split(' ')
+    setUser({
+      id: profile.id,
+      firstName,
+      lastName: rest.join(' '),
+      location: profile.location ?? undefined,
+      verified: profile.is_verified,
+    })
   }
 
   const loadDashboardData = async () => {
     try {
       setLoading(true)
-      
-      // Load stats (mock data for now - replace with API calls)
+
+      const [postsResult, jobsResult, eventsResult] = await Promise.all([
+        listPosts<PostWithAuthor>({ limit: 10 }),
+        listJobs<Job>({ limit: 4 }),
+        listEvents<EventWithOrganizer>({ limit: 4 }),
+      ])
+
+      setPosts(postsResult.data ?? [])
+      setJobs(jobsResult.data ?? [])
+      setEvents(eventsResult.data ?? [])
+
+      // Headline counts are derived from what was returned. A dedicated
+      // /api/stats endpoint should replace this once the counts need to be
+      // exact rather than indicative.
       setStats({
-        totalMembers: 45672,
-        activeJobs: 1234,
-        upcomingEvents: 89,
-        newConnections: 156,
+        totalMembers: 0,
+        activeJobs: jobsResult.data?.length ?? 0,
+        upcomingEvents: eventsResult.data?.length ?? 0,
+        newConnections: 0,
       })
-
-      // Load recent posts (mock data - replace with API calls)
-      setPosts([
-        {
-          id: '1',
-          content: 'Just landed my dream job at a tech company in Toronto! The diaspora network really works. Shoutout to everyone who supported me on this journey. 🇰🇪🇨🇦 #DiasporaSuccess #TechJobs',
-          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          author: {
-            id: '1',
-            name: 'Amara Okafor',
-            avatar: '/avatars/grace.jpg',
-            location: 'Toronto, Canada',
-            verified: true,
-          },
-          images: ['/images/celebration.jpg'],
-          likesCount: 45,
-          commentsCount: 12,
-          sharesCount: 8,
-          isLiked: false,
-          isBookmarked: false,
-          tags: ['tech', 'success', 'canada'],
-        },
-        {
-          id: '2',
-          content: 'Starting a new business venture focused on connecting African artisans with global markets. Looking for partners and investors who share the vision! 🌍✨ #AfricanBusiness #GlobalMarkets',
-          images: ['/images/artisans.jpg'],
-          createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-          author: {
-            id: '2',
-            name: 'David Kamau',
-            avatar: '/avatars/david.jpg',
-            location: 'Nairobi, Kenya',
-            verified: false,
-          },
-          likesCount: 78,
-          commentsCount: 23,
-          sharesCount: 15,
-          isLiked: true,
-          isBookmarked: true,
-          tags: ['business', 'artisans', 'investment'],
-        },
-        {
-          id: '3',
-          content: 'Hosting a virtual meetup for African professionals in the UK next Friday! Join us to discuss career growth and networking opportunities. Link in comments 👇 #AfricansInUK #Networking',
-          createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-          author: {
-            id: '3',
-            name: 'Sarah Muthoni',
-            avatar: '/avatars/sarah.jpg',
-            location: 'London, UK',
-            verified: true,
-          },
-          likesCount: 34,
-          commentsCount: 18,
-          sharesCount: 12,
-          isLiked: false,
-          isBookmarked: false,
-          tags: ['networking', 'uk', 'meetup'],
-        },
-      ])
-
-      // Load featured jobs (mock data - replace with API calls)
-      setJobs([
-        {
-          id: '1',
-          title: 'Senior Software Engineer',
-          company: 'Safaricom PLC',
-          companyLogo: '/logos/safaricom.png',
-          location: 'Nairobi, Kenya',
-          jobType: 'Full-time',
-          workType: 'Hybrid',
-          salaryMin: 2500000,
-          salaryMax: 4000000,
-          currency: 'KES',
-          description: 'Join our growing team building fintech solutions for the African market. Diaspora experience valued.',
-          requirements: ['React', 'Node.js', 'TypeScript', 'Mobile Money APIs'],
-          postedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          isBookmarked: false,
-          applicationsCount: 23,
-          experienceLevel: 'Senior',
-          skills: ['React', 'Node.js', 'TypeScript', 'AWS', 'MongoDB'],
-          diasporaFriendly: true,
-          visaSponsorship: false,
-        },
-        {
-          id: '2',
-          title: 'Marketing Manager - Africa',
-          company: 'Microsoft',
-          companyLogo: '/logos/microsoft.png',
-          location: 'Lagos, Nigeria',
-          jobType: 'Full-time',
-          workType: 'Remote',
-          salaryMin: 80000,
-          salaryMax: 120000,
-          currency: 'USD',
-          description: 'Lead marketing initiatives across African markets. Diaspora background preferred for cultural insights.',
-          requirements: ['Marketing', 'Digital Strategy', 'African Markets'],
-          postedAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-          isBookmarked: true,
-          applicationsCount: 45,
-          experienceLevel: 'Mid',
-          skills: ['Marketing', 'Strategy', 'Analytics', 'Leadership'],
-          diasporaFriendly: true,
-          visaSponsorship: true,
-        },
-      ])
-
-      // Load upcoming events (mock data - replace with API calls)
-      setEvents([
-        {
-          id: '1',
-          title: 'African Diaspora UK Annual Convention 2024',
-          description: 'Annual gathering of African professionals in the UK. Network, learn, and celebrate our heritage together.',
-          image: '/images/convention.jpg',
-          startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          endDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
-          location: 'London, UK',
-          locationType: 'in-person',
-          category: 'networking',
-          price: 50,
-          currency: 'GBP',
-          capacity: 500,
-          attendeeCount: 234,
-          isFree: false,
-          organizer: {
-            id: '1',
-            name: 'African Diaspora UK',
-            avatar: '/logos/kduk.png',
-          },
-          isBookmarked: false,
-          isAttending: true,
-          tags: ['networking', 'professional', 'culture'],
-        },
-        {
-          id: '2',
-          title: 'Tech Skills Workshop: AI for African Markets',
-          description: 'Learn how to leverage AI technologies for African market solutions. Hands-on workshop with industry experts.',
-          image: '/images/ai-workshop.jpg',
-          startDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-          location: 'Virtual Event',
-          locationType: 'virtual',
-          category: 'workshop',
-          price: 0,
-          currency: 'USD',
-          capacity: 200,
-          attendeeCount: 156,
-          isFree: true,
-          organizer: {
-            id: '2',
-            name: 'African Tech Hub',
-            avatar: '/logos/afritech.png',
-          },
-          isBookmarked: true,
-          isAttending: false,
-          tags: ['tech', 'ai', 'education'],
-        },
-      ])
-
     } catch (error) {
-      console.error('Error loading dashboard data:', error)
-      toast.error('Failed to load dashboard data')
+      console.error('Error loading dashboard:', error)
+      toast.error('Failed to load dashboard')
     } finally {
       setLoading(false)
     }

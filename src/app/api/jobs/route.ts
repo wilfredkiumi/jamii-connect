@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   const jobs = await listJobs({
     limit: Number(searchParams.get('limit')) || 20,
     offset: Number(searchParams.get('offset')) || 0,
+    q: searchParams.get('q') || undefined,
     job_type: searchParams.get('job_type') || undefined,
     work_type: searchParams.get('work_type') || undefined,
     experience_level: searchParams.get('experience_level') || undefined,

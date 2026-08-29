@@ -28,39 +28,9 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { getUserProfile } from '@/lib/amplify/auth'
-import { listEvents, searchEvents } from '@/lib/amplify/data-access'
+import { getUserProfile, listEvents, searchEvents } from '@/lib/api/client'
 import { Badge } from '@/components/ui/badge'
-
-interface Event {
-  id: string
-  title: string
-  description: string
-  image_url?: string
-  start_date: string
-  end_date?: string
-  location?: string
-  country?: string
-  is_virtual: boolean
-  event_type: string
-  price?: number
-  currency?: string
-  max_attendees?: number
-  current_attendees?: number
-  is_free: boolean
-  organizer: {
-    id: string
-    name: string
-    avatar_url?: string
-    organization?: string
-  }
-  is_bookmarked?: boolean
-  is_attending?: boolean
-  tags?: string[]
-  created_at: string
-  venue_address?: string
-  registration_link?: string
-}
+import type { EventWithOrganizer as Event, Profile } from '@/types/database'
 
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -72,7 +42,7 @@ export default function EventsPage() {
   const [virtualOnly, setVirtualOnly] = useState(false)
   const [freeOnly, setFreeOnly] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<Profile | null>(null)
 
   useEffect(() => {
     loadUser()
@@ -81,8 +51,8 @@ export default function EventsPage() {
 
   const loadUser = async () => {
     try {
-      const profile = await getUserProfile()
-      setUser(profile)
+      const { data } = await getUserProfile<Profile>()
+      setUser(data)
     } catch (error) {
       console.error('Error loading user:', error)
     }
@@ -91,165 +61,17 @@ export default function EventsPage() {
   const loadEvents = async () => {
     try {
       setLoading(true)
-      
-      // Load events from DynamoDB through API
-      const { data, error } = await listEvents({
-        status: 'published',
-        limit: 50,
-      })
+      const { data, error } = await listEvents<Event>({ limit: 50 })
 
       if (error) {
         throw error
       }
 
-      // If no events from API, use mock data for demo
-      if (!data || data.length === 0) {
-        const mockEvents: Event[] = [
-          {
-            id: '1',
-            title: 'Kenyan Diaspora UK Annual Convention 2024',
-            description: 'The largest gathering of Kenyan professionals in the UK. Network, learn, and celebrate our heritage together. Join us for inspiring talks, cultural performances, and business networking.',
-            image_url: '/images/convention.jpg',
-            start_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            end_date: new Date(Date.now() + 9 * 24 * 60 * 60 * 1000).toISOString(),
-            location: 'London',
-            country: 'United Kingdom',
-            is_virtual: false,
-            event_type: 'conference',
-            price: 75,
-            currency: 'GBP',
-            max_attendees: 500,
-            current_attendees: 234,
-            is_free: false,
-            organizer: {
-              id: '1',
-              name: 'Kenyan Diaspora UK',
-              avatar_url: '/logos/kduk.png',
-              organization: 'KDUK',
-            },
-            is_bookmarked: false,
-            is_attending: false,
-            tags: ['networking', 'professional', 'culture', 'kenya'],
-            created_at: new Date().toISOString(),
-            venue_address: 'ExCeL London, Royal Victoria Dock',
-          },
-          {
-            id: '2',
-            title: 'Tech Skills Workshop: AI for African Markets',
-            description: 'Learn how to leverage AI technologies for African market solutions. Hands-on workshop with industry experts from Google, Microsoft, and African tech startups.',
-            image_url: '/images/ai-workshop.jpg',
-            start_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-            location: null,
-            country: null,
-            is_virtual: true,
-            event_type: 'workshop',
-            price: 0,
-            currency: 'USD',
-            max_attendees: 200,
-            current_attendees: 156,
-            is_free: true,
-            organizer: {
-              id: '2',
-              name: 'African Tech Hub',
-              avatar_url: '/logos/afritech.png',
-              organization: 'ATH',
-            },
-            is_bookmarked: true,
-            is_attending: true,
-            tags: ['tech', 'ai', 'education', 'virtual'],
-            created_at: new Date().toISOString(),
-            registration_link: 'https://afritech.com/ai-workshop',
-          },
-          {
-            id: '3',
-            title: 'Jamhuri Day Celebration - Toronto',
-            description: 'Celebrate Kenya\'s Independence Day with the Kenyan community in Toronto! Enjoy traditional music, dance, authentic Kenyan cuisine, and connect with fellow Kenyans.',
-            image_url: '/images/jamhuri-day.jpg',
-            start_date: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
-            end_date: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
-            location: 'Toronto',
-            country: 'Canada',
-            is_virtual: false,
-            event_type: 'cultural',
-            price: 30,
-            currency: 'CAD',
-            max_attendees: 300,
-            current_attendees: 189,
-            is_free: false,
-            organizer: {
-              id: '3',
-              name: 'Kenyan Community Toronto',
-              avatar_url: '/logos/kct.png',
-              organization: 'KCT',
-            },
-            is_bookmarked: false,
-            is_attending: false,
-            tags: ['culture', 'celebration', 'kenya', 'jamhuri'],
-            created_at: new Date().toISOString(),
-            venue_address: 'Toronto Event Centre, 650 Dixon Rd',
-          },
-          {
-            id: '4',
-            title: 'East African Business Networking Mixer',
-            description: 'Monthly networking event for East African entrepreneurs and professionals. Build connections, share ideas, and explore business opportunities.',
-            image_url: '/images/networking.jpg',
-            start_date: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000).toISOString(),
-            location: 'Nairobi',
-            country: 'Kenya',
-            is_virtual: false,
-            event_type: 'networking',
-            price: 2000,
-            currency: 'KES',
-            max_attendees: 100,
-            current_attendees: 67,
-            is_free: false,
-            organizer: {
-              id: '4',
-              name: 'East Africa Business Network',
-              avatar_url: '/logos/eabn.png',
-              organization: 'EABN',
-            },
-            is_bookmarked: false,
-            is_attending: false,
-            tags: ['business', 'networking', 'entrepreneurs'],
-            created_at: new Date().toISOString(),
-            venue_address: 'Villa Rosa Kempinski, Waiyaki Way',
-          },
-          {
-            id: '5',
-            title: 'Diaspora Investment Summit 2024',
-            description: 'Connect with investment opportunities in Kenya. Meet government officials, learn about diaspora investment incentives, and network with successful diaspora investors.',
-            image_url: '/images/investment-summit.jpg',
-            start_date: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000).toISOString(),
-            end_date: new Date(Date.now() + 36 * 24 * 60 * 60 * 1000).toISOString(),
-            location: 'Dubai',
-            country: 'United Arab Emirates',
-            is_virtual: true,
-            event_type: 'business',
-            price: 100,
-            currency: 'USD',
-            max_attendees: 400,
-            current_attendees: 298,
-            is_free: false,
-            organizer: {
-              id: '5',
-              name: 'Kenya Diaspora Alliance',
-              avatar_url: '/logos/kda.png',
-              organization: 'KDA',
-            },
-            is_bookmarked: true,
-            is_attending: false,
-            tags: ['investment', 'business', 'diaspora', 'finance'],
-            created_at: new Date().toISOString(),
-          },
-        ]
-        setEvents(mockEvents)
-      } else {
-        setEvents(data as Event[])
-      }
+      setEvents(data ?? [])
     } catch (error) {
       console.error('Error loading events:', error)
       toast.error('Failed to load events')
+      setEvents([])
     } finally {
       setLoading(false)
     }
@@ -263,13 +85,13 @@ export default function EventsPage() {
 
     try {
       setLoading(true)
-      const { data, error } = await searchEvents(searchQuery)
+      const { data, error } = await searchEvents<Event>(searchQuery)
       
       if (error) {
         throw error
       }
       
-      setEvents(data as Event[])
+      setEvents(data ?? [])
     } catch (error) {
       console.error('Error searching events:', error)
       toast.error('Failed to search events')
@@ -513,7 +335,7 @@ export default function EventsPage() {
                 <Checkbox
                   id="virtual-only"
                   checked={virtualOnly}
-                  onCheckedChange={setVirtualOnly}
+                  onCheckedChange={(checked) => setVirtualOnly(checked === true)}
                 />
                 <label htmlFor="virtual-only" className="text-sm font-medium flex items-center">
                   <Video className="h-4 w-4 mr-1" />
@@ -526,7 +348,7 @@ export default function EventsPage() {
                 <Checkbox
                   id="free-only"
                   checked={freeOnly}
-                  onCheckedChange={setFreeOnly}
+                  onCheckedChange={(checked) => setFreeOnly(checked === true)}
                 />
                 <label htmlFor="free-only" className="text-sm font-medium">
                   Free Events Only
@@ -559,7 +381,7 @@ export default function EventsPage() {
                     {upcomingEvents.length} Upcoming Events
                   </h2>
                   <p className="text-muted-foreground text-sm">
-                    Don't miss out on these amazing opportunities
+                    Don&apos;t miss out on these amazing opportunities
                   </p>
                 </div>
               </div>
@@ -642,7 +464,7 @@ export default function EventsPage() {
                         No past events found
                       </h3>
                       <p className="text-muted-foreground">
-                        Past events will appear here once they've concluded
+                        Past events will appear here once they&apos;ve concluded
                       </p>
                     </CardContent>
                   </Card>

@@ -1,25 +1,7 @@
 import { query, queryOne } from './index';
+import type { Service, ServiceWithProvider } from '@/types/database';
 
-export interface Service {
-  id: string;
-  provider_id: string;
-  service_name: string;
-  category: string;
-  description: string;
-  contact_phone: string | null;
-  contact_email: string | null;
-  website: string | null;
-  location: string | null;
-  service_area: string[];
-  pricing_type: string;
-  pricing_amount: number | null;
-  pricing_currency: string;
-  is_verified: boolean;
-  rating: number;
-  review_count: number;
-  created_at: string;
-  updated_at: string;
-}
+export type { Service, ServiceWithProvider };
 
 export async function getService(id: string): Promise<Service | null> {
   return queryOne<Service>('SELECT * FROM services WHERE id = $1', [id]);
@@ -31,13 +13,15 @@ export async function listServices(options?: {
   category?: string;
   location?: string;
   is_verified?: boolean;
-}): Promise<Service[]> {
+  country?: string;
+  q?: string;
+}): Promise<ServiceWithProvider[]> {
   const conditions: string[] = [];
   const params: unknown[] = [];
   let i = 1;
 
   if (options?.category) {
-    conditions.push(`category = $${i++}`);
+    conditions.push(`s.category = $${i++}`);
     params.push(options.category);
   }
   if (options?.location) {
@@ -45,8 +29,22 @@ export async function listServices(options?: {
     params.push(`%${options.location}%`);
   }
   if (options?.is_verified !== undefined) {
-    conditions.push(`is_verified = $${i++}`);
+    conditions.push(`s.is_verified = $${i++}`);
     params.push(options.is_verified);
+  }
+
+  if (options?.q) {
+    // One placeholder reused across columns. The value is parameterized, so
+    // this is injection-safe; note that `%` or `_` typed by the user still act
+    // as wildcards, which for a search box is acceptable behaviour.
+    conditions.push(`(s.service_name ILIKE $${i} OR s.description ILIKE $${i} OR s.category ILIKE $${i})`);
+    params.push(`%${options.q}%`);
+    i++;
+  }
+
+  if (options?.country) {
+    conditions.push(`s.country = $${i++}`);
+    params.push(options.country);
   }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -54,8 +52,25 @@ export async function listServices(options?: {
   const offset = options?.offset || 0;
 
   params.push(limit, offset);
-  return query<Service>(
-    `SELECT * FROM services ${where} ORDER BY is_verified DESC, created_at DESC LIMIT $${i++} OFFSET $${i}`,
+  return query<ServiceWithProvider>(
+    `SELECT s.*,
+      json_build_object(
+        'id', pr.id,
+        'full_name', pr.full_name,
+        'avatar_url', pr.avatar_url,
+        'location', pr.location,
+        'country', pr.country,
+        'profession', pr.profession,
+        'company', pr.company,
+        'bio', pr.bio,
+        'heritage_countries', pr.heritage_countries,
+        'is_verified', pr.is_verified
+      ) AS provider
+     FROM services s
+     JOIN profiles pr ON s.provider_id = pr.id
+     ${where}
+     ORDER BY s.is_verified DESC, s.created_at DESC
+     LIMIT $${i++} OFFSET $${i}`,
     params
   );
 }

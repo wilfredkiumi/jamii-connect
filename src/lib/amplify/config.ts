@@ -11,7 +11,7 @@ const amplifyConfig = {
         email: true,
         username: false,
       },
-      signUpVerificationMethod: 'code',
+      signUpVerificationMethod: 'code' as const,
       userAttributes: {
         email: {
           required: true,

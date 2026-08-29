@@ -1,7 +1,25 @@
 import { Pool } from 'pg';
 
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error(
+    'DATABASE_URL is not set. Add your Neon pooled connection string to .env.local ' +
+      '(the host should contain "-pooler").'
+  );
+}
+
+// Neon (and any managed Postgres) requires TLS; local dev does not.
+const isLocal = /@(localhost|127\.0\.0\.1)[:/]/.test(connectionString);
+
+// Serverless functions each get their own pool, so keep it small and let idle
+// connections drop quickly — Neon's pooler multiplexes on its side.
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://wilfred@localhost:5432/jamii_connect',
+  connectionString,
+  ssl: isLocal ? undefined : { rejectUnauthorized: true },
+  max: 5,
+  idleTimeoutMillis: 10_000,
+  connectionTimeoutMillis: 10_000,
 });
 
 export default pool;

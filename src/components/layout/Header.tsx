@@ -27,7 +27,9 @@ import {
   Home,
   BookOpen,
 } from 'lucide-react';
-import { signOutUser, getUserProfile } from '@/lib/amplify/auth';
+import { signOutUser } from '@/lib/amplify/auth';
+import { getUserProfile } from '@/lib/api/client';
+import type { Profile } from '@/types/database';
 import { toast } from 'sonner';
 
 interface User {
@@ -57,13 +59,14 @@ export function Header() {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const profile = await getUserProfile();
+        const { data: profile } = await getUserProfile<Profile>();
         if (profile) {
+          const [firstName = '', ...rest] = (profile.full_name ?? '').split(' ');
           setUser({
             id: profile.id,
             email: profile.email,
-            firstName: profile.firstName || '',
-            lastName: profile.lastName || '',
+            firstName,
+            lastName: rest.join(' '),
           });
         }
       } catch {

@@ -1,31 +1,30 @@
 import { query, queryOne } from './index';
+import type { Post, PostWithAuthor } from '@/types/database';
 
-export interface Post {
-  id: string;
-  user_id: string;
-  content: string;
-  image_url: string | null;
-  tags: string[];
-  likes_count: number;
-  comments_count: number;
-  shares_count: number;
-  is_pinned: boolean;
-  created_at: string;
-  updated_at: string;
-}
+export type { Post, PostWithAuthor };
 
-export interface PostWithAuthor extends Post {
-  author_name: string | null;
-  author_avatar: string | null;
-}
-
-export async function getPost(id: string): Promise<PostWithAuthor | null> {
+export async function getPost(id: string, viewerId?: string): Promise<PostWithAuthor | null> {
   return queryOne<PostWithAuthor>(
-    `SELECT p.*, pr.full_name as author_name, pr.avatar_url as author_avatar
+    `SELECT p.*,
+      json_build_object(
+        'id', pr.id,
+        'full_name', pr.full_name,
+        'avatar_url', pr.avatar_url,
+        'location', pr.location,
+        'country', pr.country,
+        'profession', pr.profession,
+        'company', pr.company,
+        'bio', pr.bio,
+        'heritage_countries', pr.heritage_countries,
+        'is_verified', pr.is_verified
+      ) AS author,
+      COALESCE($2::uuid IS NOT NULL AND EXISTS (
+        SELECT 1 FROM post_likes l WHERE l.post_id = p.id AND l.user_id = $2
+      ), FALSE) AS is_liked
      FROM posts p
      JOIN profiles pr ON p.user_id = pr.id
      WHERE p.id = $1`,
-    [id]
+    [id, viewerId ?? null]
   );
 }
 
@@ -33,6 +32,8 @@ export async function listPosts(options?: {
   limit?: number;
   offset?: number;
   user_id?: string;
+  /** Signed-in profile id, used to compute `is_liked`. Omit for anonymous readers. */
+  viewer_id?: string;
 }): Promise<PostWithAuthor[]> {
   const conditions: string[] = [];
   const params: unknown[] = [];
@@ -47,9 +48,25 @@ export async function listPosts(options?: {
   const limit = options?.limit || 20;
   const offset = options?.offset || 0;
 
-  params.push(limit, offset);
+  const viewerParam = i + 2; // sits after the limit/offset placeholders
+  params.push(limit, offset, options?.viewer_id ?? null);
   return query<PostWithAuthor>(
-    `SELECT p.*, pr.full_name as author_name, pr.avatar_url as author_avatar
+    `SELECT p.*,
+      json_build_object(
+        'id', pr.id,
+        'full_name', pr.full_name,
+        'avatar_url', pr.avatar_url,
+        'location', pr.location,
+        'country', pr.country,
+        'profession', pr.profession,
+        'company', pr.company,
+        'bio', pr.bio,
+        'heritage_countries', pr.heritage_countries,
+        'is_verified', pr.is_verified
+      ) AS author,
+      COALESCE($${viewerParam}::uuid IS NOT NULL AND EXISTS (
+        SELECT 1 FROM post_likes l WHERE l.post_id = p.id AND l.user_id = $${viewerParam}
+      ), FALSE) AS is_liked
      FROM posts p
      JOIN profiles pr ON p.user_id = pr.id
      ${where}

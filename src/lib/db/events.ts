@@ -1,30 +1,29 @@
 import { query, queryOne } from './index';
+import type { Event, EventWithOrganizer } from '@/types/database';
 
-export interface Event {
-  id: string;
-  created_by: string;
-  title: string;
-  description: string;
-  image_url: string | null;
-  start_date: string;
-  end_date: string | null;
-  location: string | null;
-  country: string | null;
-  is_virtual: boolean;
-  event_type: 'conference' | 'workshop' | 'networking' | 'cultural' | 'business' | 'social';
-  price: number | null;
-  currency: string;
-  max_attendees: number | null;
-  current_attendees: number;
-  is_free: boolean;
-  registration_url: string | null;
-  tags: string[];
-  created_at: string;
-  updated_at: string;
-}
+export type { Event, EventWithOrganizer };
 
-export async function getEvent(id: string): Promise<Event | null> {
-  return queryOne<Event>('SELECT * FROM events WHERE id = $1', [id]);
+export async function getEvent(id: string): Promise<EventWithOrganizer | null> {
+  return queryOne<EventWithOrganizer>(
+    `SELECT e.*,
+      json_build_object(
+        'id', pr.id,
+        'full_name', pr.full_name,
+        'avatar_url', pr.avatar_url,
+        'location', pr.location,
+        'country', pr.country,
+        'profession', pr.profession,
+        'company', pr.company,
+        'bio', pr.bio,
+        'heritage_countries', pr.heritage_countries,
+        'is_verified', pr.is_verified
+      ) AS organizer,
+      FALSE AS is_attending
+     FROM events e
+     JOIN profiles pr ON e.created_by = pr.id
+     WHERE e.id = $1`,
+    [id]
+  );
 }
 
 export async function listEvents(options?: {
@@ -34,35 +33,69 @@ export async function listEvents(options?: {
   country?: string;
   is_free?: boolean;
   upcoming_only?: boolean;
-}): Promise<Event[]> {
+  q?: string;
+  /** Signed-in profile id, used to compute `is_attending`. */
+  viewer_id?: string;
+}): Promise<EventWithOrganizer[]> {
   const conditions: string[] = [];
   const params: unknown[] = [];
   let i = 1;
 
   if (options?.event_type) {
-    conditions.push(`event_type = $${i++}`);
+    conditions.push(`e.event_type = $${i++}`);
     params.push(options.event_type);
   }
   if (options?.country) {
-    conditions.push(`country = $${i++}`);
+    conditions.push(`e.country = $${i++}`);
     params.push(options.country);
   }
   if (options?.is_free !== undefined) {
-    conditions.push(`is_free = $${i++}`);
+    conditions.push(`e.is_free = $${i++}`);
     params.push(options.is_free);
   }
   if (options?.upcoming_only !== false) {
-    conditions.push(`start_date >= $${i++}`);
+    conditions.push(`e.start_date >= $${i++}`);
     params.push(new Date().toISOString());
+  }
+
+  if (options?.q) {
+    // One placeholder reused across columns. The value is parameterized, so
+    // this is injection-safe; note that `%` or `_` typed by the user still act
+    // as wildcards, which for a search box is acceptable behaviour.
+    conditions.push(`(e.title ILIKE $${i} OR e.description ILIKE $${i} OR e.location ILIKE $${i})`);
+    params.push(`%${options.q}%`);
+    i++;
   }
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
   const limit = options?.limit || 20;
   const offset = options?.offset || 0;
 
-  params.push(limit, offset);
-  return query<Event>(
-    `SELECT * FROM events ${where} ORDER BY start_date ASC LIMIT $${i++} OFFSET $${i}`,
+  const viewerParam = i + 2; // sits after the limit/offset placeholders
+  params.push(limit, offset, options?.viewer_id ?? null);
+  return query<EventWithOrganizer>(
+    `SELECT e.*,
+      json_build_object(
+        'id', pr.id,
+        'full_name', pr.full_name,
+        'avatar_url', pr.avatar_url,
+        'location', pr.location,
+        'country', pr.country,
+        'profession', pr.profession,
+        'company', pr.company,
+        'bio', pr.bio,
+        'heritage_countries', pr.heritage_countries,
+        'is_verified', pr.is_verified
+      ) AS organizer,
+      COALESCE($${viewerParam}::uuid IS NOT NULL AND EXISTS (
+        SELECT 1 FROM event_attendees a
+        WHERE a.event_id = e.id AND a.user_id = $${viewerParam} AND a.status = 'attending'
+      ), FALSE) AS is_attending
+     FROM events e
+     JOIN profiles pr ON e.created_by = pr.id
+     ${where}
+     ORDER BY e.start_date ASC
+     LIMIT $${i++} OFFSET $${i}`,
     params
   );
 }

@@ -23,37 +23,25 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { toast } from 'sonner'
-
-interface Post {
-  id: string
-  content: string
-  image_url?: string
-  created_at: string
-  author: {
-    id: string
-    full_name: string
-    avatar_url?: string
-    location?: string
-    country?: string
-  }
-  likes_count: number
-  comments_count: number
-  is_liked: boolean
-  is_bookmarked: boolean
-  tags?: string[]
-}
+import type { PostWithAuthor as Post } from '@/types/database'
 
 interface PostCardProps {
   post: Post
+  /** Per-viewer UI state; there is no bookmarks table backing this yet. */
+  bookmarked?: boolean
   onLike?: (postId: string) => void
   onBookmark?: (postId: string) => void
   onShare?: (postId: string) => void
 }
 
-export default function PostCard({ post, onLike, onBookmark, onShare }: PostCardProps) {
+export default function PostCard({ post, bookmarked = false, onLike, onBookmark, onShare }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(post.is_liked)
-  const [isBookmarked, setIsBookmarked] = useState(post.is_bookmarked)
+  const [isBookmarked, setIsBookmarked] = useState(bookmarked)
   const [likesCount, setLikesCount] = useState(post.likes_count)
+
+  // full_name and avatar_url are nullable columns; fall back rather than
+  // letting `.split()` throw on a profile that has not been completed.
+  const authorName = post.author.full_name ?? 'Community member'
 
   const handleLike = async () => {
     try {
@@ -83,7 +71,7 @@ export default function PostCard({ post, onLike, onBookmark, onShare }: PostCard
     try {
       if (navigator.share) {
         await navigator.share({
-          title: `Post by ${post.author.full_name}`,
+          title: `Post by ${authorName}`,
           text: post.content.substring(0, 100) + '...',
           url: `${window.location.origin}/posts/${post.id}`,
         })
@@ -131,15 +119,15 @@ export default function PostCard({ post, onLike, onBookmark, onShare }: PostCard
           <div className="flex items-center space-x-3">
             <Link href={`/profile/${post.author.id}`}>
               <Avatar className="h-10 w-10 border-2 border-[var(--clay-200)] hover:border-[var(--terracotta)] transition-colors">
-                <AvatarImage src={post.author.avatar_url} alt={post.author.full_name} />
+                <AvatarImage src={post.author.avatar_url ?? undefined} alt={authorName} />
                 <AvatarFallback className="bg-[var(--clay-100)] text-[var(--clay)]">
-                  {post.author.full_name.split(' ').map(n => n[0]).join('')}
+                  {authorName.split(' ').map((n: string) => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
             </Link>
             <div>
               <Link href={`/profile/${post.author.id}`} className="hover:underline">
-                <h3 className="font-semibold text-[var(--clay)]">{post.author.full_name}</h3>
+                <h3 className="font-semibold text-[var(--clay)]">{authorName}</h3>
               </Link>
               <div className="flex items-center space-x-2 text-sm text-[var(--clay-500)]">
                 <span>{getCountryFlag(post.author.country || '')}</span>

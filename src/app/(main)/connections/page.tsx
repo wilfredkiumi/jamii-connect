@@ -31,31 +31,18 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { getUserProfile } from '@/lib/amplify/auth'
-import { listConnections, searchUsers } from '@/lib/amplify/data-access'
+import { getUserProfile, listConnections, searchUsers, createConnection, respondToConnection } from '@/lib/api/client'
+import type { AuthorSummary, ConnectionWithProfile as Connection, Profile } from '@/types/database'
 
-interface Connection {
-  id: string
-  firstName: string
-  lastName: string
-  profileImage?: string
-  profession?: string
-  company?: string
-  location?: string
-  country?: string
-  heritageCountry?: string
-  bio?: string
-  connectionStatus: 'connected' | 'pending' | 'none'
-  mutualConnections?: number
-  verified?: boolean
-  isOnline?: boolean
-  lastActive?: string
-}
+// full_name is nullable in the profiles table; every display path needs a fallback.
+const displayName = (p: AuthorSummary) => p.full_name ?? 'Community member'
+const initials = (p: AuthorSummary) =>
+  displayName(p).split(' ').map((n) => n[0]).slice(0, 2).join('')
 
 export default function ConnectionsPage() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<Profile | null>(null)
   const [connections, setConnections] = useState<Connection[]>([])
-  const [suggestions, setSuggestions] = useState<Connection[]>([])
+  const [suggestions, setSuggestions] = useState<AuthorSummary[]>([])
   const [pendingRequests, setPendingRequests] = useState<Connection[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -69,8 +56,8 @@ export default function ConnectionsPage() {
 
   const loadUser = async () => {
     try {
-      const profile = await getUserProfile()
-      setUser(profile)
+      const { data } = await getUserProfile<Profile>()
+      setUser(data)
     } catch (error) {
       console.error('Error loading user:', error)
     }
@@ -79,137 +66,54 @@ export default function ConnectionsPage() {
   const loadConnections = async () => {
     try {
       setLoading(true)
-      
-      // Mock data for demo
-      const mockConnections: Connection[] = [
-        {
-          id: '1',
-          firstName: 'David',
-          lastName: 'Kamau',
-          profileImage: '/avatars/david.jpg',
-          profession: 'Software Engineer',
-          company: 'Safaricom',
-          location: 'Nairobi',
-          country: 'Kenya',
-          heritageCountry: 'Kenya',
-          bio: 'Building the future of mobile money in Africa',
-          connectionStatus: 'connected',
-          mutualConnections: 12,
-          verified: true,
-          isOnline: true,
-          lastActive: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          firstName: 'Sarah',
-          lastName: 'Muthoni',
-          profileImage: '/avatars/sarah.jpg',
-          profession: 'Financial Advisor',
-          company: 'Standard Chartered',
-          location: 'London',
-          country: 'United Kingdom',
-          heritageCountry: 'Kenya',
-          bio: 'Helping diaspora with cross-border financial planning',
-          connectionStatus: 'connected',
-          mutualConnections: 8,
-          verified: true,
-          isOnline: false,
-          lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        },
-      ]
 
-      const mockSuggestions: Connection[] = [
-        {
-          id: '3',
-          firstName: 'James',
-          lastName: 'Kiprotich',
-          profileImage: '/avatars/james.jpg',
-          profession: 'Data Scientist',
-          company: 'Microsoft',
-          location: 'Seattle',
-          country: 'United States',
-          heritageCountry: 'Kenya',
-          bio: 'Machine learning engineer focusing on African language processing',
-          connectionStatus: 'none',
-          mutualConnections: 5,
-          verified: false,
-          isOnline: true,
-        },
-        {
-          id: '4',
-          firstName: 'Mary',
-          lastName: 'Wanjiru',
-          profileImage: '/avatars/mary.jpg',
-          profession: 'Marketing Manager',
-          company: 'Unilever',
-          location: 'Dubai',
-          country: 'United Arab Emirates',
-          heritageCountry: 'Kenya',
-          bio: 'Marketing professional with 10+ years in FMCG across East Africa',
-          connectionStatus: 'none',
-          mutualConnections: 3,
-          verified: true,
-          isOnline: false,
-        },
-      ]
+      const [connectionsResult, suggestionsResult] = await Promise.all([
+        listConnections<Connection>(),
+        searchUsers<AuthorSummary>({ limit: 12 }),
+      ])
 
-      const mockPending: Connection[] = [
-        {
-          id: '5',
-          firstName: 'Peter',
-          lastName: 'Njoroge',
-          profileImage: '/avatars/peter.jpg',
-          profession: 'Investment Banker',
-          company: 'Goldman Sachs',
-          location: 'New York',
-          country: 'United States',
-          heritageCountry: 'Kenya',
-          bio: 'Investment banking with focus on African markets',
-          connectionStatus: 'pending',
-          mutualConnections: 7,
-          verified: true,
-          isOnline: false,
-        },
-      ]
+      if (connectionsResult.error) throw connectionsResult.error
+      if (suggestionsResult.error) throw suggestionsResult.error
 
-      setConnections(mockConnections)
-      setSuggestions(mockSuggestions)
-      setPendingRequests(mockPending)
+      const rows = connectionsResult.data ?? []
+      // One request returns both lists; split by status rather than refetching.
+      setConnections(rows.filter((c) => c.status === 'accepted'))
+      setPendingRequests(rows.filter((c) => c.status === 'pending'))
+
+      const connectedIds = new Set(rows.map((c) => c.profile.id))
+      setSuggestions((suggestionsResult.data ?? []).filter((p) => !connectedIds.has(p.id)))
     } catch (error) {
       console.error('Error loading connections:', error)
       toast.error('Failed to load connections')
+      setConnections([])
+      setPendingRequests([])
+      setSuggestions([])
     } finally {
       setLoading(false)
     }
   }
 
-  const handleConnect = async (userId: string) => {
-    try {
-      // Update UI optimistically
-      setSuggestions(prev => 
-        prev.map(user => 
-          user.id === userId ? { ...user, connectionStatus: 'pending' as const } : user
-        )
-      )
-      toast.success('Connection request sent!')
-    } catch (error) {
+  const handleConnect = async (profileId: string) => {
+    const { error } = await createConnection(profileId)
+    if (error) {
       console.error('Error sending connection request:', error)
-      toast.error('Failed to send connection request')
+      toast.error(error.message)
+      return
     }
+    setSuggestions((prev) => prev.filter((p) => p.id !== profileId))
+    toast.success('Connection request sent!')
+    loadConnections()
   }
 
-  const handleAcceptRequest = async (userId: string) => {
-    try {
-      const user = pendingRequests.find(u => u.id === userId)
-      if (user) {
-        setConnections(prev => [...prev, { ...user, connectionStatus: 'connected' }])
-        setPendingRequests(prev => prev.filter(u => u.id !== userId))
-        toast.success('Connection request accepted!')
-      }
-    } catch (error) {
+  const handleAcceptRequest = async (connectionId: string) => {
+    const { error } = await respondToConnection(connectionId, 'accepted')
+    if (error) {
       console.error('Error accepting connection request:', error)
-      toast.error('Failed to accept connection request')
+      toast.error(error.message)
+      return
     }
+    toast.success('Connection request accepted!')
+    loadConnections()
   }
 
   const getCountryFlag = (country: string) => {
@@ -221,32 +125,32 @@ export default function ConnectionsPage() {
     return countryFlags[country] || '🌍'
   }
 
-  const UserCard = ({ user, showConnectButton = false, showAcceptButton = false }: { 
-    user: Connection, 
+  // Renders a person. Callers pass a profile directly (suggestions) or the
+  // other party of a connection row (`connection.profile`).
+  const UserCard = ({ user, connectionId, showConnectButton = false, showAcceptButton = false }: {
+    user: AuthorSummary,
+    connectionId?: string,
     showConnectButton?: boolean,
-    showAcceptButton?: boolean 
+    showAcceptButton?: boolean
   }) => (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-start space-x-3">
           <div className="relative">
             <Avatar className="h-12 w-12 border-2 border-[var(--terracotta)]/20">
-              <AvatarImage src={user.profileImage} alt={`${user.firstName} ${user.lastName}`} />
+              <AvatarImage src={user.avatar_url ?? undefined} alt={displayName(user)} />
               <AvatarFallback className="bg-[var(--terracotta)]/10 text-[var(--terracotta)]">
-                {user.firstName[0]}{user.lastName[0]}
+                {initials(user)}
               </AvatarFallback>
             </Avatar>
-            {user.isOnline && (
-              <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 border-2 border-background"></div>
-            )}
           </div>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
               <h3 className="font-semibold text-foreground truncate">
-                {user.firstName} {user.lastName}
+                {displayName(user)}
               </h3>
-              {user.verified && (
+              {user.is_verified && (
                 <Badge variant="secondary" className="bg-[var(--terracotta)]/10 text-[var(--terracotta)] border-[var(--terracotta)]/20">
                   Verified
                 </Badge>
@@ -265,20 +169,13 @@ export default function ConnectionsPage() {
             </div>
             
             <div className="flex items-center space-x-1 text-sm text-muted-foreground mt-1">
-              <span>{getCountryFlag(user.country || '')}</span>
+              <span>{getCountryFlag(user.country ?? '')}</span>
               <MapPin className="h-3 w-3" />
               <span>{user.location}, {user.country}</span>
             </div>
             
             {user.bio && (
               <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{user.bio}</p>
-            )}
-            
-            {user.mutualConnections && user.mutualConnections > 0 && (
-              <div className="flex items-center space-x-1 text-sm text-[var(--terracotta)] mt-2">
-                <Users className="h-3 w-3" />
-                <span>{user.mutualConnections} mutual connections</span>
-              </div>
             )}
             
             <div className="flex items-center justify-between mt-3">
@@ -288,19 +185,9 @@ export default function ConnectionsPage() {
                     size="sm" 
                     className="bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)]"
                     onClick={() => handleConnect(user.id)}
-                    disabled={user.connectionStatus === 'pending'}
                   >
-                    {user.connectionStatus === 'pending' ? (
-                      <>
-                        <Clock className="h-3 w-3 mr-1" />
-                        Pending
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="h-3 w-3 mr-1" />
-                        Connect
-                      </>
-                    )}
+                    <UserPlus className="h-3 w-3 mr-1" />
+                    Connect
                   </Button>
                 )}
                 
@@ -308,14 +195,14 @@ export default function ConnectionsPage() {
                   <Button 
                     size="sm" 
                     className="bg-[var(--terracotta)] hover:bg-[var(--terracotta-light)]"
-                    onClick={() => handleAcceptRequest(user.id)}
+                    onClick={() => connectionId && handleAcceptRequest(connectionId)}
                   >
                     <UserCheck className="h-3 w-3 mr-1" />
                     Accept
                   </Button>
                 )}
                 
-                {user.connectionStatus === 'connected' && (
+                {!showConnectButton && !showAcceptButton && (
                   <Button size="sm" variant="outline">
                     <MessageCircle className="h-3 w-3 mr-1" />
                     Message
@@ -402,7 +289,7 @@ export default function ConnectionsPage() {
                 <Globe className="h-5 w-5 text-purple-600" />
                 <div className="text-left">
                   <p className="text-2xl font-bold">
-                    {new Set([...connections, ...suggestions].map(u => u.country)).size}
+                    {new Set([...connections.map((c) => c.profile), ...suggestions].map((p) => p.country)).size}
                   </p>
                   <p className="text-xs text-muted-foreground">Countries</p>
                 </div>
@@ -457,7 +344,7 @@ export default function ConnectionsPage() {
         <TabsContent value="connections" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {connections.map((connection) => (
-              <UserCard key={connection.id} user={connection} />
+              <UserCard key={connection.id} user={connection.profile} connectionId={connection.id} />
             ))}
           </div>
           {connections.length === 0 && (
@@ -489,7 +376,7 @@ export default function ConnectionsPage() {
         <TabsContent value="requests" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pendingRequests.map((request) => (
-              <UserCard key={request.id} user={request} showAcceptButton />
+              <UserCard key={request.id} user={request.profile} connectionId={request.id} showAcceptButton />
             ))}
           </div>
           {pendingRequests.length === 0 && (

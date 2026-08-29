@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -33,42 +32,11 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import type { JobWithPoster as Job } from '@/types/database'
+import { getJob } from '@/lib/api/client'
 // import JobApplicationForm from '@/components/features/JobApplicationForm'
 
-interface Job {
-  id: string
-  title: string
-  company: string
-  company_logo?: string
-  location: string
-  country: string
-  job_type: 'full-time' | 'part-time' | 'contract' | 'freelance' | 'internship'
-  work_type: 'remote' | 'hybrid' | 'on-site'
-  salary_min?: number
-  salary_max?: number
-  currency: string
-  description: string
-  requirements: string[]
-  benefits?: string[]
-  skills: string[]
-  experience_level: 'entry' | 'mid' | 'senior' | 'executive'
-  company_size?: string
-  industry?: string
-  application_url?: string
-  application_email?: string
-  is_diaspora_friendly: boolean
-  is_active: boolean
-  views_count: number
-  applications_count: number
-  posted_at: string
-  expires_at?: string
-  poster: {
-    id: string
-    full_name: string
-    avatar_url?: string
-    profession?: string
-  }
-}
+const posterName = (j: Job) => j.poster.full_name ?? 'Community member'
 
 export default function JobDetailPage() {
   const params = useParams()
@@ -90,79 +58,19 @@ export default function JobDetailPage() {
   const loadJob = async (jobId: string) => {
     try {
       setLoading(true)
-      
-      // Mock job data for now
-      const mockJob: Job = {
-        id: jobId,
-        title: 'Senior Software Engineer - Fintech',
-        company: 'AfriPay Technologies',
-        company_logo: '/api/placeholder/100/100',
-        location: 'Lagos',
-        country: 'Nigeria',
-        job_type: 'full-time',
-        work_type: 'hybrid',
-        salary_min: 80000,
-        salary_max: 120000,
-        currency: 'USD',
-        description: `We are seeking a Senior Software Engineer to join our mission to revolutionize payments across Africa. You'll be building the next generation of financial infrastructure for the continent, working with cutting-edge technologies and a passionate team.
+      const { data, error } = await getJob<Job>(jobId)
 
-As a Senior Software Engineer at AfriPay, you will:
-• Design and develop scalable backend systems for payment processing
-• Work with modern technologies including React, Node.js, and AWS
-• Collaborate with cross-functional teams to deliver high-quality products
-• Mentor junior developers and contribute to technical decisions
-• Ensure security and compliance in all financial transactions
-
-We're looking for someone who shares our vision of financial inclusion across Africa and has the technical skills to make it happen. This is a unique opportunity to have a significant impact on millions of lives across the continent.`,
-        requirements: [
-          '5+ years of software development experience',
-          'Strong proficiency in JavaScript/TypeScript and Node.js',
-          'Experience with React and modern frontend frameworks',
-          'Knowledge of cloud platforms (AWS, Azure, or GCP)',
-          'Understanding of financial systems and payment processing',
-          'Experience with microservices architecture',
-          'Strong problem-solving and communication skills',
-          'Bachelor&apos;s degree in Computer Science or related field'
-        ],
-        benefits: [
-          'Competitive salary with equity options',
-          'Comprehensive health insurance',
-          'Flexible working arrangements',
-          'Professional development budget',
-          'Annual team retreats',
-          'Visa sponsorship available',
-          'Relocation assistance for diaspora candidates'
-        ],
-        skills: ['React', 'Node.js', 'TypeScript', 'AWS', 'MongoDB', 'Docker', 'Kubernetes'],
-        experience_level: 'senior',
-        company_size: '50-200 employees',
-        industry: 'Fintech',
-        application_url: 'https://afripay.com/careers/senior-engineer',
-        application_email: 'careers@afripay.com',
-        is_diaspora_friendly: true,
-        is_active: true,
-        views_count: 234,
-        applications_count: 23,
-        posted_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        expires_at: new Date(Date.now() + 27 * 24 * 60 * 60 * 1000).toISOString(),
-        poster: {
-          id: '1',
-          full_name: 'Kwame Asante',
-          avatar_url: '',
-          profession: 'Head of Engineering'
-        }
+      if (error || !data) {
+        throw error ?? new Error('Job not found')
       }
 
-      setJob(mockJob)
-      
-      // Check if user has bookmarked or applied
-      // This would be real API calls in production
+      setJob(data)
       setIsBookmarked(false)
       setHasApplied(false)
-      
     } catch (error) {
       console.error('Error loading job:', error)
       toast.error('Failed to load job details')
+      setJob(null)
     } finally {
       setLoading(false)
     }
@@ -283,7 +191,7 @@ We're looking for someone who shares our vision of financial inclusion across Af
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <h1 className="text-display text-2xl font-bold text-[var(--clay)] mb-4">Job not found</h1>
-        <p className="text-[var(--clay-500)] mb-6">The job you're looking for doesn't exist or has been removed.</p>
+        <p className="text-[var(--clay-500)] mb-6">The job you&apos;re looking for doesn&apos;t exist or has been removed.</p>
         <Button asChild>
           <Link href="/jobs">Browse All Jobs</Link>
         </Button>
@@ -448,7 +356,7 @@ We're looking for someone who shares our vision of financial inclusion across Af
               <div className="flex items-center space-x-2">
                 <Clock className="h-5 w-5 text-[var(--clay-500)]" />
                 <span className="text-[var(--clay-600)]">
-                  Posted {formatDistanceToNow(new Date(job.posted_at), { addSuffix: true })}
+                  Posted {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
                 </span>
               </div>
 
@@ -510,13 +418,13 @@ We're looking for someone who shares our vision of financial inclusion across Af
             <CardContent>
               <div className="flex items-center space-x-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={job.poster.avatar_url} alt={job.poster.full_name} />
+                  <AvatarImage src={job.poster.avatar_url ?? undefined} alt={posterName(job)} />
                   <AvatarFallback>
-                    {job.poster.full_name.split(' ').map(n => n[0]).join('')}
+                    {posterName(job).split(' ').map((n: string) => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-medium text-[var(--clay)]">{job.poster.full_name}</h3>
+                  <h3 className="font-medium text-[var(--clay)]">{posterName(job)}</h3>
                   {job.poster.profession && (
                     <p className="text-sm text-[var(--clay-500)]">{job.poster.profession}</p>
                   )}
